@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>	
+    <meta charset="UTF-8"> 
+    <meta name="author" content="Frank Gößwein">
+    <title>Cobra Trace Analyzer</title>	
+
+	<link rel="stylesheet" href="styles/TrStyles.css">   			 
+ 	<link rel="stylesheet" href="styles/ui-grid.min.css"> 	
+	
+	<script src=""></script>
+	<script src="scripts/angular.min.js"></script>	
+	<script src="scripts/ui-grid.min.js"></script>
+	<script src="scripts/TrApp.js"></script>	
+	<script src="scripts/TrBusiness.js"></script>	
+	<script src="scripts/TrCtrl.js"></script>	  	 		
+</head>
+
+
+<body ng-app="TrApp" >
+  	
+    <div ng-controller="CtrTrInput" ng-show="TrVisibility.ShowInput">      		
+		<h1>COBRA TRACE ANALYZER</h1>
+		Tracedatei: <br>
+		<div class="TrPanel" style="width: 400px">
+			<input type="file" onchange="angular.element(this).scope().OnFileNameChanged(this)">		
+		</div> 
+		<br>		
+		Filter: 
+		<br>		
+		<div class="TrPanel" style="width: 800px">			
+			<input type="checkbox" ng-checked="TrFilter.SQlTime.On" ng-click="OnClickAnalyzeSQlTime()"/> Nur Statements anzeigen die länger als <input type="number" step=0.01 ng-model="TrFilter.SQlTime.Time"> Sekunden dauern. <br>
+			<input type="checkbox" ng-checked="TrFilter.WaitingTime.On" ng-click="OnClickAnalyzeWaitingTime()"/> Nur Statements anzeigen bei denen das Folgestatement länger als  <input type="number" step=0.01 ng-model="TrFilter.WaitingTime.Time"> Sekunden warten muss.
+		</div>							
+		<br>
+		Hinweise:
+		<div class="TrPanel" style="width: 1200px">
+			Die angezeigten Zeiten sind in Sekunden angegeben. <br>
+			Sofern der Trace Zeitstempel enthält werden diese angezeigt und die Wartezeit zwischen 2 Statements berechnet.<br>			
+			Das Tool wurde mit Chrome und Firefox und Tracedateien bis zu 100MB getestet und hat damit keine Probleme. IE ist deutlich langsamer. <br>	 	
+			Ich habe versucht Zeilen die kein SQL enthalten mit Typ "Info" zu kennzeichnen. Die Unterscheidung ist aber nicht zu 100% möglich. Das liegt am Aufbau der Tracedatei.			
+		</div>
+		<br> 		
+        <button class="TrButton" ng-disabled="TraceLoading==true" ng-click="OnClickAnalzyeTrace()">Ergebnis ermitteln</button>	
+		<div id="Standort" ng-show="Standort.city!=''">
+			Standort: "{{Standort.city}} {{Standort.country}}"   IP: "{{Standort.query}}"   Isp: "{{Standort.isp}}"   
+		</div>
+	</div>
+    
+  	<div ng-controller="CtrTrStatus" ng-show="TrVisibility.ShowStatus"> 
+        <h2 ng-bind-html="StatusText"> </h2>        
+	</div>    
+  
+	<div ng-controller="CtrTrResult" ng-show="TrVisibility.ShowResult">
+        <button ng-click="OnClickShowTrace()">Zurück</button><br>
+        <h2>Ergebnis</h2>     
+        <!-- <div ng-bind-html="GetResultHtml()"></div> -->	      	
+		<div ui-grid="GridOptions" ui-grid-edit ui-grid-cellnav ui-grid-resize-columns ui-grid-grouping ui-grid-exporter class="TrGridResult">
+		<div>
+	        <table class="TrGridResultFooter" ng-show="TrFilter.SQlTime.On || TrFilter.WaitingTime.On">
+		        	<tr><td>Count: {{TrStatistics.Filtered.Count}} </td><td ng-show="HasTimestamps"></td> <td>Sum: {{TrStatistics.Filtered.SumTraceTime.toFixed(3)}}</td><td ng-show="HasTimestamps">SUM: {{TrStatistics.Filtered.SumWaitingTime.toFixed(3)}} </td></tr>
+		        	<tr><td></td><td ng-show="HasTimestamps"></td> <td> Avg {{TrStatistics.Filtered.AvgTraceTime.toFixed(3)}} </td>  <td ng-show="HasTimestamps"> </td> </tr>        		        		        	
+	        </table>
+			<table class="TrGridResultFooter">
+		        	<tr><td>Count: {{TrStatistics.Total.Count}} </td>  <td ng-show="HasTimestamps">Sum: {{TrStatistics.Total.SumTimestampTime.toFixed(3)}}</td><td> Sum: {{TrStatistics.Total.SumTraceTime.toFixed(3)}} </td><td ng-show="HasTimestamps"> SUM {{TrStatistics.Total.SumWaitingTime.toFixed(3)}} </td></tr>
+		        	<tr><td> </td><td ng-show="HasTimestamps">  </td><td>Avg: {{TrStatistics.Total.AvgTraceTime.toFixed(3)}}</td>  <td ng-show="HasTimestamps"> </td> </tr>
+	        </table>
+        </div> 		        		
+	</div>     
+</body>
+
+</html>

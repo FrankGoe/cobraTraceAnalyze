@@ -18,6 +18,7 @@ l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrVisibilit
 	function InitLocation()
 	{
 		$scope.Standort = {isp : "", city : "", country : "", query : ""};
+		return;
 		
 		$http({
 			method : "JSONP",
@@ -67,7 +68,7 @@ l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrVisibilit
 		
 		function DoOnLoad() 
 		{
-			TrAnalyze.Data.TraceFile = reader.result;
+			TrAnalyze.TraceFile = reader.result;
 			$scope.TraceLoading = false;
 			$scope.$apply();
 		}		
@@ -105,7 +106,7 @@ l_App.controller('CtrTrStatus', function($scope, $sce, $q, $timeout, TrVisibilit
 		// Statustext
 		$scope.StatusText = $sce.trustAsHtml("Ergebnismenge mit " + TrStatistics.Filtered.Count + " SQL-Statements wird geladen. Bitte warten...");
 
-		if (TrAnalyze.Data.HasTimestamps)
+		if (TrAnalyze.HasTimestamps)
 		{
 			TrGridOptions.columnDefs[1].visible = true;
 			TrGridOptions.columnDefs[3].visible = true;		
@@ -133,22 +134,23 @@ l_App.controller('CtrTrResult', function($scope, $sce, TrFilter, TrVisibility, T
 	$scope.TrStatistics = TrStatistics;
 	$scope.TrVisibility = TrVisibility;
 	$scope.TrFilter = TrFilter;	
-	$scope.AnalyzeData = TrAnalyze.Data;
-	$scope.HasTimestamps = false;
+	$scope.TrAnalyze = TrAnalyze;
 	
 	// Scope Events
 	$scope.OnClickShowTrace = DoClickShowTrace;
 	$scope.GetResultHtml = DoGetResultHtml;
 	
 	$scope.TraceRows = [];
+	$scope.HasTimestamps = false;
 	$scope.GridOptions = TrGridOptions;
-	$scope.$watch('AnalyzeData.TraceRows', OnTraceRowChanged); 
+	
+	$scope.$watch('TrAnalyze.TraceRows', OnTraceResultChanged); 	
 	
 	// Events
-	function OnTraceRowChanged()
+	function OnTraceResultChanged()
 	{
-		$scope.TraceRows = TrAnalyze.Data.TraceRows;		
-		$scope.HasTimestamps = TrAnalyze.Data.HasTimestamps;
+		$scope.TraceRows = TrAnalyze.TraceRows;
+		$scope.HasTimestamps = TrAnalyze.HasTimestamps;			
 	}	
 	
 	// Methods	

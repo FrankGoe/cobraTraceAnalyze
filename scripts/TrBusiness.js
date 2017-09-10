@@ -1,6 +1,6 @@
 l_App = angular.module('TrApp');
 
-l_App.factory('TrAnalyze', function(TrFilter, TrStatistics) 
+l_App.factory('TrAnalyze', function(TrOptions, TrStatistics) 
 {
 	function StrIsNumber(p_String) 
 	{
@@ -8,8 +8,9 @@ l_App.factory('TrAnalyze', function(TrFilter, TrStatistics)
 		return l_Reg.test(p_String.replace(" ",""));
 	}
 
-	function ResetStatistic()
+	function Reset()
 	{
+		TrOptions.SelectedIndex = -1;
 		TrStatistics.Filtered.Count = 0;
 		TrStatistics.Filtered.AvgTraceTime = 0;
 		TrStatistics.Filtered.SumTraceTime = 0;
@@ -25,7 +26,7 @@ l_App.factory('TrAnalyze', function(TrFilter, TrStatistics)
 	function GetTimeStampAsString(p_Timestamp)
 	{
 		if (!isNaN(p_Timestamp))
-			return LPad(p_Timestamp.getHours()) + ":" + LPad(p_Timestamp.getMinutes()) + ":" + LPad(p_Timestamp.getSeconds()) + ":" + LPad(p_Timestamp.getMilliseconds(), 3)
+			return _.padStart(p_Timestamp.getDate(), 2, '0') + "." + _.padStart(p_Timestamp.getMonth(), 2, '0')  + " " + _.padStart(p_Timestamp.getHours(), 2, '0') + ":" + _.padStart(p_Timestamp.getMinutes(), 2, '0') + ":" + _.padStart(p_Timestamp.getSeconds(), 2, '0')+ ":" + _.padStart(p_Timestamp.getMilliseconds(), 3, '0')
 		else
 			return "";
 	}
@@ -60,9 +61,9 @@ l_App.factory('TrAnalyze', function(TrFilter, TrStatistics)
 			TrStatistics.Total.SumWaitingTime = TrStatistics.Total.SumWaitingTime + l_Item.WaitingTime;			
 			
 			if 	(
-					(TrFilter.SQlTime.On && (l_Item.SqlTime > TrFilter.SQlTime.Time)) || 
-					(TrFilter.WaitingTime.On && (l_Item.WaitingTime > TrFilter.WaitingTime.Time)) ||
-					(!TrFilter.WaitingTime.On && !TrFilter.SQlTime.On)
+					(TrOptions.SQlTime.On && (l_Item.SqlTime > TrOptions.SQlTime.Time)) || 
+					(TrOptions.WaitingTime.On && (l_Item.WaitingTime > TrOptions.WaitingTime.Time)) ||
+					(!TrOptions.WaitingTime.On && !TrOptions.SQlTime.On)
 				)		   
 			{				
 				TrStatistics.Filtered.Count++;
@@ -109,16 +110,6 @@ l_App.factory('TrAnalyze', function(TrFilter, TrStatistics)
 		p_LineParams.SQLTimestamp = new Date(0);
 	}	
 	
-	function LPad(p_Zahl, p_AnzStellen = 2, p_Fuellzeichen = "0" )
-	{
-		var l_Zahl = p_Zahl + "";
-		
-		while( l_Zahl.length < p_AnzStellen )
-			l_Zahl = p_Fuellzeichen + l_Zahl;
-		
-		return l_Zahl;
-	}
-	
 	function GetTraceType(p_LineParams)
 	{
 		if (p_LineParams.TraceType.length != 0) 
@@ -156,7 +147,7 @@ l_App.factory('TrAnalyze', function(TrFilter, TrStatistics)
 			var l_FirstTimestamp;
 			var l_LastTimestamp;
 			
-			ResetStatistic();
+			Reset();
 						
 			// Trace started enthält keinen timestamp und muss entfernt werden
 			if (l_Rows.length > 0 && l_Rows[0].search("TRACE started") > -1)

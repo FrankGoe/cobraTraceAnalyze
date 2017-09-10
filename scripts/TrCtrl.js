@@ -1,25 +1,24 @@
 l_App = angular.module('TrApp');
 
-l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrVisibility, TrAnalyze, TrFilter) 
+l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrVisibility, TrAnalyze, TrOptions) 
 {      	
-	// Scope Variables
+	// Variables
 	$scope.TrVisibility = TrVisibility;		
-	$scope.TrFilter = TrFilter;
-	
-	// Scope Events
+	$scope.TrOptions = TrOptions;
+	$scope.Standort = {isp : "", city : "", country : "", query : ""};		
+
+	// Events
 	$scope.OnClickAnalzyeTrace = DoClickAnalyzeTrace;
 	$scope.OnFileNameChanged = DoFileNameChanged;
 	$scope.OnClickAnalyzeWaitingTime = DoClickAnalyzeWaitingTime;
 	$scope.OnClickAnalyzeSQlTime = DoClickAnalyzeSQlTime;
 	$scope.TraceLoading = true;
 	
-	InitLocation();
+//	InitLocation();
 
+	// Methods
 	function InitLocation()
 	{
-		$scope.Standort = {isp : "", city : "", country : "", query : ""};
-		return;
-		
 		$http({
 			method : "JSONP",
 			url : "http://ip-api.com/json/?callback=JSON_CALLBACK",
@@ -35,13 +34,13 @@ l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrVisibilit
 	
 	function DoClickAnalyzeWaitingTime() 
 	{
-		$scope.TrFilter.WaitingTime.On = $scope.TrFilter.WaitingTime.On != true;
+		$scope.TrOptions.WaitingTime.On = $scope.TrOptions.WaitingTime.On != true;
 	}
 	
 		   
 	function DoClickAnalyzeSQlTime() 
 	{
-		$scope.TrFilter.SQlTime.On = $scope.TrFilter.SQlTime.On != true;
+		$scope.TrOptions.SQlTime.On = $scope.TrOptions.SQlTime.On != true;
 	}	
 	
 	function DoClickAnalyzeTrace()
@@ -61,14 +60,15 @@ l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrVisibilit
 		$scope.TraceLoading = true;
 		$scope.$apply();
 		
-		var reader = new FileReader();
+		var l_Reader = new FileReader();
 
-		reader.onload = DoOnLoad;		
-		reader.readAsText(element.files[0]);
+		l_Reader.onload = DoOnLoad;		
+		l_Reader.readAsText(element.files[0]);
 		
 		function DoOnLoad() 
 		{
-			TrAnalyze.TraceFile = reader.result;
+			TrAnalyze.TraceFile = l_Reader.result;
+
 			$scope.TraceLoading = false;
 			$scope.$apply();
 		}		
@@ -77,20 +77,20 @@ l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrVisibilit
 
 l_App.controller('CtrTrStatus', function($scope, $sce, $q, $timeout, TrVisibility, TrAnalyze, TrStatistics, TrGridOptions) 
 {
-	// Scope Variables
+	// Variables
 	$scope.TrVisibility = TrVisibility;
 	
-	// Scope Events
-	$scope.$watch('TrVisibility.ShowStatus', OnShowStatusChange); 
+	// Events
+	$scope.$watch('TrVisibility.ShowStatus', DoShowStatusChange); 
 		
 	// Methods
 	function ExecuteAnalyze()
 	{	
 		// Execute Async
-		$q.when(TrAnalyze.AnalyzeTrace()).then(OnAnalyzeFinished()); 			
+		$q.when(TrAnalyze.AnalyzeTrace()).then(DoAnalyzeFinished()); 			
 	}
 	
-	function OnShowStatusChange()
+	function DoShowStatusChange()
 	{
 		if (TrVisibility.ShowStatus)
 		{				
@@ -101,7 +101,7 @@ l_App.controller('CtrTrStatus', function($scope, $sce, $q, $timeout, TrVisibilit
 		}			   
 	}
 	
-	function OnAnalyzeFinished(p_Result) 
+	function DoAnalyzeFinished(p_Result) 
 	{
 		// Statustext
 		$scope.StatusText = $sce.trustAsHtml("Ergebnismenge mit " + TrStatistics.Filtered.Count + " SQL-Statements wird geladen. Bitte warten...");
@@ -124,47 +124,139 @@ l_App.controller('CtrTrStatus', function($scope, $sce, $q, $timeout, TrVisibilit
 	function HideStatusCtr()
 	{
 		TrVisibility.ShowStatus = false;
-		TrVisibility.ShowResult = true;			  																						
+		TrVisibility.ShowResult = false;		
+		TrVisibility.ShowChart = true;	
 	}
 });
 
-l_App.controller('CtrTrResult', function($scope, $sce, TrFilter, TrVisibility, TrAnalyze, TrStatistics, TrGridOptions ) 
+l_App.controller('CtrTrResult', function($scope, $sce, uiGridConstants, TrOptions, TrVisibility, TrAnalyze, TrStatistics, TrGridOptions ) 
 {
-	// Scope Variables
+	// Variables
 	$scope.TrStatistics = TrStatistics;
 	$scope.TrVisibility = TrVisibility;
-	$scope.TrFilter = TrFilter;	
+	$scope.TrOptions = TrOptions;	
 	$scope.TrAnalyze = TrAnalyze;
 	
-	// Scope Events
-	$scope.OnClickShowTrace = DoClickShowTrace;
-	$scope.GetResultHtml = DoGetResultHtml;
-	
 	$scope.TraceRows = [];
-	$scope.HasTimestamps = false;
+	$scope.HasTimestamps = false;	
 	$scope.GridOptions = TrGridOptions;
-	
-	$scope.$watch('TrAnalyze.TraceRows', OnTraceResultChanged); 	
-	
+	$scope.GridOptions.onRegisterApi = DoRegisterGridApi;
+
 	// Events
-	function OnTraceResultChanged()
+	$scope.OnClickShowInput = DoShowInput;
+	$scope.OnClickShowChart = DoClickShowChart;	
+	$scope.$watch('TrAnalyze.TraceRows', DoTraceResultChanged);
+	$scope.$watch('TrOptions.SelectedIndex', DoSelectedIndexChanged);
+	
+	// Methods	
+
+	function DoRegisterGridApi(gridApi)
+	{
+		$scope.gridApi = gridApi;
+	};
+		
+	function DoSelectedIndexChanged()
+	{
+		if ($scope.TrOptions.SelectedIndex != -1 && TrAnalyze.TraceRows.length >= $scope.TrOptions.SelectedIndex)
+		{
+			$scope.gridApi.grid.columns[1].filters[0] = {
+				condition: uiGridConstants.filter.STARTS_WITH,
+				term: TrAnalyze.TraceRows[$scope.TrOptions.SelectedIndex].Id
+			  };			
+		}
+	}
+
+	function DoTraceResultChanged()
 	{
 		$scope.TraceRows = TrAnalyze.TraceRows;
 		$scope.HasTimestamps = TrAnalyze.HasTimestamps;			
 	}	
-	
-	// Methods	
-    function DoClickShowTrace() 
+
+	function DoShowInput() 
 	{
 		TrVisibility.ShowInput = true;
 		TrVisibility.ShowResult = false;
+		TrVisibility.ShowChart = false;				
 	};
 
-	function DoGetResultHtml()
+	function DoClickShowChart() 
 	{
-		return $sce.trustAsHtml(TrAnalyze.RowsAsTable());		
-	};
+		TrVisibility.ShowInput = false;
+		TrVisibility.ShowResult = false;
+		TrVisibility.ShowChart = true;		
+	};	
 });
+
+l_App.controller('CtrTrChart', function($scope, $sce, TrOptions, TrVisibility, TrAnalyze, TrStatistics) 
+{
+	// Variables
+	$scope.TrVisibility = TrVisibility;
+	$scope.TrOptions = TrOptions;
+	$scope.ChartType = 'SqlTime';	
+	$scope.ChartOptions = {legend: {display: true},
+						   tooltips: {enabled: true, 
+				                      callbacks: {label: function(tooltipItem, data) {
+												  var label = data.labels[tooltipItem.index];
+												  var datasetLabel = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+													return 'Nummer: ' + TrAnalyze.TraceRows[tooltipItem.index].Id + ' Zeit: ' + datasetLabel +  ' ' +  TrAnalyze.TraceRows[tooltipItem.index].Sql.substring(0, 110);
+													}
+												  }
+									 }
+							};
+
+	// Events
+	$scope.OnClickShowInput = DoShowInput;
+	$scope.OnClickResult = DoShowResult;	
+	$scope.OnShowChart = DoShowChart;	
+	$scope.OnChartClick = DoChartClick;
+	
+	$scope.$watch('TrVisibility.ShowChart', DoShowChart); 
+	
+	// Methods
+
+	function DoChartClick(points, evt) 
+	{
+		if (points != undefined && points.length == 1)
+		{
+			DoShowResult();
+			$scope.TrOptions.SelectedIndex = points[0]._index;
+
+			$scope.$apply();				
+			//alert(TrAnalyze.TraceRows[l_TraceRowIdx].Sql);
+		}		
+	}
+
+    function DoShowInput() 
+	{
+		TrVisibility.ShowInput = true;
+		TrVisibility.ShowChart = false;
+		TrVisibility.ShowResult = false;
+	};
+
+    function DoShowResult() 
+	{
+		TrVisibility.ShowInput = false;
+		TrVisibility.ShowChart = false;
+		TrVisibility.ShowResult = true;
+	};
+	
+	function DoShowChart()
+	{	
+		$scope.labels = _.map(TrAnalyze.TraceRows, 'TimeStampStr');
+
+		if ($scope.ChartType == 'SqlTime')
+		{
+			$scope.series = ['Laufzeit'];
+			$scope.data = [_.map(TrAnalyze.TraceRows, 'SqlTime')];
+		}
+		else
+		{
+			$scope.series = ['Wartezeit'];
+			$scope.data = [_.map(TrAnalyze.TraceRows, 'WaitingTime')];
+		}
+	}	
+});
+
 
 
 

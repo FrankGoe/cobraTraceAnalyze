@@ -23,7 +23,7 @@
 
 <body ng-app="TrApp" >
   	
-    <div ng-controller="CtrTrInput" ng-show="TrVisibility.ShowInput">      		
+    <div ng-controller="CtrTrInput" ng-show="TrOptions.VisibleController==TrVisibility.VisibleController.Input">      		
 		<h1>COBRA TRACE ANALYZER</h1>
 		Tracedatei: <br>
 		<div class="TrPanel" style="width:400px">
@@ -51,33 +51,34 @@
 		</div>
 	</div>
     
-  	<div ng-controller="CtrTrStatus" ng-show="TrVisibility.ShowStatus"> 
+  	<div ng-controller="CtrTrStatus" ng-show="TrOptions.VisibleController==TrVisibility.VisibleController.Status"> 
         <h2 ng-bind-html="StatusText"> </h2>        
 	</div>    
 
-	<div ng-controller="CtrTrChart" ng-show="TrVisibility.ShowChart">
+	<div ng-controller="CtrTrChart" ng-show="TrOptions.VisibleController==TrVisibility.VisibleController.Chart">
 		<button ng-click="OnClickShowInput()">Zurück</button>
 		<button ng-click="OnClickResult()">Weiter</button><br>				
 		<h2>Übersicht</h2>  
 		<input type="radio" ng-model="ChartType" value="SqlTime" ng-change="OnShowChart()"> Laufzeit
-        <input type="radio" ng-model="ChartType" value="WaitingTime" ng-change="OnShowChart()"> Wartezeit	
+		<input type="radio" ng-model="ChartType" value="WaitingTime" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> Wartezeit	
+		<input type="radio" ng-model="ChartType" value="Both" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> Beide	
 		<br/>
 		<div style="width:1200px">
 			<canvas id="line" class="chart chart-line" chart-data="data" chart-labels="labels" chart-series="series" chart-click="OnChartClick" chart-options="ChartOptions"></canvas>
 		</div>
 	</div>
 
-	<div ng-controller="CtrTrResult" ng-show="TrVisibility.ShowResult">
+	<div ng-controller="CtrTrResult" ng-show="TrOptions.VisibleController==TrVisibility.VisibleController.Result">
 			<button ng-click="OnClickShowChart()">Zurück</button><br>		
 			<h2>Statements</h2>     
 			<div ui-grid="GridOptions" ui-grid-edit ui-grid-cellnav ui-grid-resize-columns ui-grid-grouping ui-grid-exporter class="TrGridResult">
 				<table class="TrGridResultFooter" ng-show="TrOptions.SQlTime.On || TrOptions.WaitingTime.On">
-						<tr><td>Count: {{TrStatistics.Filtered.Count}} </td><td ng-show="HasTimestamps"></td><td>Sum: {{TrStatistics.Filtered.SumTraceTime.toFixed(3)}}</td><td ng-show="HasTimestamps">SUM: {{TrStatistics.Filtered.SumWaitingTime.toFixed(3)}} </td></tr>
-						<tr><td></td><td ng-show="HasTimestamps"></td><td> Avg {{TrStatistics.Filtered.AvgTraceTime.toFixed(3)}} </td><td ng-show="HasTimestamps"></td> </tr>        		        		        	
+						<tr><td>Count: {{TrStatistics.Filtered.Count}} </td><td ng-show="TrAnalyze.HasTimestamps"></td><td>Sum: {{TrStatistics.Filtered.SumTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps">SUM: {{TrStatistics.Filtered.SumWaitingTime.toFixed(3)}} </td></tr>
+						<tr><td></td><td ng-show="TrAnalyze.HasTimestamps"></td><td> Avg {{TrStatistics.Filtered.AvgTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>        		        		        	
 				</table>
 				<table class="TrGridResultFooter">
-						<tr><td>Count: {{TrStatistics.Total.Count}} </td><td ng-show="HasTimestamps">Sum: {{TrStatistics.Total.SumTimestampTime.toFixed(3)}}</td><td> Sum: {{TrStatistics.Total.SumTraceTime.toFixed(3)}} </td><td ng-show="HasTimestamps"> SUM {{TrStatistics.Total.SumWaitingTime.toFixed(3)}} </td></tr>
-						<tr><td> </td><td ng-show="HasTimestamps">  </td><td>Avg: {{TrStatistics.Total.AvgTraceTime.toFixed(3)}}</td><td ng-show="HasTimestamps"></td> </tr>
+						<tr><td>Count: {{TrStatistics.Total.Count}} </td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Total.SumTimestampTime.toFixed(3)}}</td><td> Sum: {{TrStatistics.Total.SumTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"> SUM {{TrStatistics.Total.SumWaitingTime.toFixed(3)}} </td></tr>
+						<tr><td> </td><td ng-show="TrAnalyze.HasTimestamps">  </td><td>Avg: {{TrStatistics.Total.AvgTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>
 				</table>        
 			</div>     
 		</div>	

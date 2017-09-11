@@ -1,11 +1,8 @@
 l_App = angular.module('TrApp', ['ui.grid', 'ui.grid.edit', 'ui.grid.cellNav','ui.grid.resizeColumns', 'ui.grid.grouping','ui.grid.exporter', 'chart.js']);
 
-l_App.value('TrVisibility', {ShowInput: true, ShowStatus: false, ShowResult: false, ShowChart: false});
+l_App.constant('TrVisibility', {VisibleController: {Input: 0, Status: 1, Chart: 2, Result: 3} });
 
-l_App.value('TrOptions', {SQlTime: {On: true, Time : 0.1},	
-						 WaitingTime: {On: true, Time : 0.1},
-						 SelectedIndex: -1
-						});
+l_App.value('TrOptions', {SQlTime: {On: true, Time : 0.1},  WaitingTime: {On: true, Time : 0.1},  SelectedIndex: -1, VisibleController: 0});
 
 l_App.value('TrStatistics', { Filtered: {Count : 0, SumTraceTime : 0, AvgTraceTime : 0, SumWaitingTime : 0},
 							  Total: {Count : 0, SumTraceTime : 0, AvtTraceTime : 0, SumWaitingTime : 0, SumTimestampTime : 0}						

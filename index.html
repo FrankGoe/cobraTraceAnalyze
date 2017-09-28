@@ -59,9 +59,9 @@
 		<button ng-click="OnClickShowInput()">Zurück</button>
 		<button ng-click="OnClickResult()">Weiter</button><br>				
 		<h2>Übersicht</h2>  
-		<input type="radio" ng-model="ChartType" value="SqlTime" ng-change="OnShowChart()"> Laufzeit
-		<input type="radio" ng-model="ChartType" value="WaitingTime" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> Wartezeit	
-		<input type="radio" ng-model="ChartType" value="Both" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> Beide	
+		<input type="radio" ng-model="ChartType" value="SqlTime" ng-change="OnShowChart()"> <label>Laufzeit</label> 
+		<input type="radio" ng-model="ChartType" value="WaitingTime" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> <label ng-show="TrAnalyze.HasTimestamps">Wartezeit</label> 
+		<input type="radio" ng-model="ChartType" value="Both" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> <label ng-show="TrAnalyze.HasTimestamps">Beide</label> 
 		<br/>
 		<div style="width:1200px">
 			<canvas id="line" class="chart chart-line" chart-data="data" chart-labels="labels" chart-series="series" chart-click="OnChartClick" chart-options="ChartOptions"></canvas>

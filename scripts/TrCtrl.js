@@ -137,13 +137,20 @@ l_App.controller('CtrTrChart', function($scope, $sce, TrOptions, TrVisibility, T
 	$scope.ChartOptions = {legend: {display: true},
 						   tooltips: {enabled: true, 
 				                      callbacks: {label: function(tooltipItem, data) {
-												  var label = data.labels[tooltipItem.index];
-												  var datasetLabel = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+												  	var label = data.labels[tooltipItem.index];
+												  	var datasetLabel = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
 													return 'Nummer: ' + TrAnalyze.TraceRows[tooltipItem.index].Id + ' Zeit: ' + datasetLabel +  ' ' +  TrAnalyze.TraceRows[tooltipItem.index].Sql.substring(0, 110);
 													}
 												  }
-									 }
-							};
+									 },
+							scales: {
+										xAxes: [
+										  {
+											gridLines: {display: false}
+										  }
+										]
+									  }	
+						};
 
 	// Events
 	$scope.OnClickShowInput = DoShowInput;

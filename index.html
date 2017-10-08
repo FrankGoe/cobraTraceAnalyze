@@ -75,9 +75,9 @@
 			<h2>Statements</h2>     
 			<div ui-grid="GridOptions" ui-grid-edit ui-grid-cellnav ui-grid-resize-columns ui-grid-grouping ui-grid-exporter ui-grid-auto-resize class="TrGridResult" ng-style="OnGetTableStyle()"></div>     
 			<table class="TrGridResultFooter">
-				<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td>Filtered: {{TrStatistics.Filtered.Count}} </td><td ng-show="TrAnalyze.HasTimestamps"></td><td>Sum: {{TrStatistics.Filtered.SumTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps">SUM: {{TrStatistics.Filtered.SumWaitingTime.toFixed(3)}} </td></tr>
+				<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td>Filtered: {{TrStatistics.Filtered.Count}} </td><td ng-show="TrAnalyze.HasTimestamps"></td><td>Sum: {{TrStatistics.Filtered.SumTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Filtered.SumWaitingTime.toFixed(3)}} </td></tr>
 				<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td></td><td ng-show="TrAnalyze.HasTimestamps"></td><td> Avg {{TrStatistics.Filtered.AvgTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>        		        		        	
-				<tr><td>Total: {{TrStatistics.Total.Count}} </td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Total.SumTimestampTime.toFixed(3)}}</td><td> Sum: {{TrStatistics.Total.SumTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"> SUM {{TrStatistics.Total.SumWaitingTime.toFixed(3)}} </td></tr>
+				<tr><td>Total: {{TrStatistics.Total.Count}} </td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Total.SumTimestampTime.toFixed(3)}}</td><td> Sum: {{TrStatistics.Total.SumTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"> Sum: {{TrStatistics.Total.SumWaitingTime.toFixed(3)}} </td></tr>
 				<tr><td> </td><td ng-show="TrAnalyze.HasTimestamps">  </td><td>Avg: {{TrStatistics.Total.AvgTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>			
 			</table>
 		</div>	

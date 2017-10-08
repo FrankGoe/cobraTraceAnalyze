@@ -1,6 +1,6 @@
 l_App = angular.module('TrApp');
 
-l_App.factory('TrAnalyze', function(TrOptions, TrStatistics) 
+l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType) 
 {
 	function StrIsNumber(p_String) 
 	{
@@ -26,7 +26,7 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics)
 	function GetTimeStampAsString(p_Timestamp)
 	{
 		if (!isNaN(p_Timestamp))
-			return _.padStart(p_Timestamp.getDate(), 2, '0') + "." + _.padStart(p_Timestamp.getMonth(), 2, '0')  + " " + _.padStart(p_Timestamp.getHours(), 2, '0') + ":" + _.padStart(p_Timestamp.getMinutes(), 2, '0') + ":" + _.padStart(p_Timestamp.getSeconds(), 2, '0')+ ":" + _.padStart(p_Timestamp.getMilliseconds(), 3, '0')
+			return _.padStart(p_Timestamp.getDate(), 2, '0') + "." + _.padStart(p_Timestamp.getMonth(), 2, '0') + "." + p_Timestamp.getFullYear() + " " + _.padStart(p_Timestamp.getHours(), 2, '0') + ":" + _.padStart(p_Timestamp.getMinutes(), 2, '0') + ":" + _.padStart(p_Timestamp.getSeconds(), 2, '0')+ "." + _.padStart(p_Timestamp.getMilliseconds(), 3, '0')
 		else
 			return "";
 	}
@@ -37,14 +37,96 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics)
 		return new Date(p_Row.substr(0,4), p_Row.substr(4,2), p_Row.substr(6,2), p_Row.substr(9,2), p_Row.substr(11,2), p_Row.substr(13,2), p_Row.substr(16,3));		
 	}
 	
-	function GetSqlTime(p_Row)
+	function TimeToFormattedStr(p_Time)
 	{
-		var l_TimeStr = (p_Row.substr(0,5) == "Time:") ? p_Row.substr(6, p_Row.length) : "";
-		var l_Time = parseFloat(l_TimeStr.replace(/[^0-9]/g, "")) / 1000;
+		var l_Seconds = p_Time;
+		var l_Hours = 0;
+		var l_Minutes = 0;	
 		
-		if (isNaN(l_Time))
-			l_Time = 0;
-						
+		if (p_Time > 60)
+		{
+			l_Minutes = Math.trunc(p_Time / 60);
+			l_Seconds = (p_Time % 60); // Modulo
+		}
+
+		if (l_Minutes > 60)
+		{
+			l_Hours =  Math.trunc(l_Minutes / 60);
+			l_Minutes = Math.trunc(l_Minutes % 60);
+		}
+		
+		if (l_Hours > 0)
+		{
+			return  l_Hours + " std " +  l_Minutes + " min " + l_Seconds.toFixed(3) + " sec";
+		}
+
+		else if (l_Minutes > 0)
+		{
+			return l_Minutes + " min " + l_Seconds.toFixed(3) + " sec";			
+		}
+		else
+		{
+			return l_Seconds.toFixed(3) + " sec";
+		}
+	}
+
+	function GetSqlTime(p_Row)
+	{		
+		var l_TimeStr = ((p_Row.substr(0,5) == "Time:") ? p_Row.substr(6, p_Row.length) : "").replace("[WARNING]","").trim();
+		var l_Time = 0;
+		var l_Idx = -1;
+
+		// Milisekunden suchen
+		l_Idx = l_TimeStr.lastIndexOf(".");
+
+		if (l_Idx === -1)
+			return l_Time;
+
+		l_Time = parseInt(l_TimeStr.substr(l_Idx + 1, l_TimeStr.length)) / 1000; 
+		l_TimeStr = l_TimeStr.substr(0, l_Idx);
+
+		// Sekunden suchen
+		l_Idx = l_TimeStr.lastIndexOf(":");		
+
+		if (l_Idx === -1)
+		{
+			if (l_TimeStr !== "")
+				l_Time = l_Time + parseInt(l_TimeStr)
+			
+			return l_Time;
+		}
+
+		l_Time = l_Time + parseInt(l_TimeStr.substr(l_Idx + 1, l_TimeStr.length));
+		l_TimeStr = l_TimeStr.substr(0, l_Idx);				
+
+		// Minuten auslesen
+		l_Idx = l_TimeStr.lastIndexOf(":")
+
+		if (l_Idx === -1)
+		{
+			if (l_TimeStr !== "")
+				l_Time = l_Time + parseInt(l_TimeStr) * 60;
+
+			return l_Time;		
+		}
+
+		l_Time = l_Time + parseInt(l_TimeStr.substr(l_Idx + 1, l_TimeStr.length)) * 60; 
+		l_TimeStr = l_TimeStr.substr(0, l_Idx);		
+
+		// Stunden auslesen
+		l_Idx = l_TimeStr.lastIndexOf(":")
+		
+		if (l_Idx === -1)
+		{
+			if (l_TimeStr !== "")
+				l_Time = l_Time + parseInt(l_TimeStr) * 3600;
+
+			return l_Time;		
+		}
+
+		l_Time = l_Time + parseInt(l_TimeStr.substr(l_Idx + 1, l_TimeStr.length)) * 3600 ; 
+		l_TimeStr = l_TimeStr.substr(0, l_Idx);			
+								
 		return l_Time;
 	}	
 	
@@ -61,9 +143,9 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics)
 			TrStatistics.Total.SumWaitingTime = TrStatistics.Total.SumWaitingTime + l_Item.WaitingTime;			
 			
 			if 	(
-					(TrOptions.SQlTime.On && (l_Item.SqlTime > TrOptions.SQlTime.Time)) || 
-					(TrOptions.WaitingTime.On && (l_Item.WaitingTime > TrOptions.WaitingTime.Time)) ||
-					(!TrOptions.WaitingTime.On && !TrOptions.SQlTime.On)
+					(TrOptions.SelectedFilter == TrFilterType.SqlTime && (l_Item.SqlTime > TrOptions.SqlTime)) || 
+					(TrOptions.SelectedFilter == TrFilterType.WaitingTime && (l_Item.WaitingTime > TrOptions.WaitingTime)) ||
+					(TrOptions.SelectedFilter == TrFilterType.All)
 				)		   
 			{				
 				TrStatistics.Filtered.Count++;
@@ -78,15 +160,20 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics)
 		return l_FilteredResult;
 	}	
 	
-	function CreateTraceItem(p_LineParams, p_ResultArr, p_HasTimestamps) 
+	function CreateTraceItem(p_LineParams, p_ResultArr, p_HasTimestamps, p_SqlTime) 
 	{	
 		if (p_LineParams.SQLText.length > 0)
 		{					
+			var l_TimeStampStr = GetTimeStampAsString(p_LineParams.SQLTimestamp);
+
 			var l_Item = {Id: p_ResultArr.length + 1, 
-						  SqlTime: Number(p_LineParams.SqlTime), 
+						  SqlTime: p_SqlTime,
+						  SqlTimeStr: TimeToFormattedStr(p_SqlTime),
 						  TimeStamp: p_LineParams.SQLTimestamp,
-						  TimeStampStr: GetTimeStampAsString(p_LineParams.SQLTimestamp),
+						  TimeStampStr:l_TimeStampStr,
+						  TimeStampStrShort:l_TimeStampStr.substr(11,8),
 						  WaitingTime: 0, 
+						  WaitingTimeStr: "0",						  
 						  Typ: GetTraceType(p_LineParams),  
 						  Sql: p_LineParams.SQLText};
 
@@ -100,13 +187,14 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics)
 				
 				if (l_PrevItem.WaitingTime < 0)
 					l_PrevItem.WaitingTime = 0;
+
+				l_PrevItem.WaitingTimeStr = TimeToFormattedStr(l_PrevItem.WaitingTime);
 			}
 		}
 		
 		// LineParams zurücksetzen
 		p_LineParams.SQLText = "";		
 		p_LineParams.TraceType = "";		
-		p_LineParams.SqlTime = new Date(0);
 		p_LineParams.SQLTimestamp = new Date(0);
 	}	
 	
@@ -142,7 +230,7 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics)
 			var l_ReadSQL= false;
 			var l_Skip = false;		
 			var l_SciParsing = false;
-			var l_LineParams = {SQLText: "", TraceType: "", SQLTimestamp: new Date(0), SqlTime: new Date(0)};
+			var l_LineParams = {SQLText: "", TraceType: "", SQLTimestamp: new Date(0)};
 			var l_CurrentTimestamp;
 			var l_FirstTimestamp;
 			var l_LastTimestamp;
@@ -194,10 +282,8 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics)
 
 				// Lesevorgang beenden
 				else if (l_ReadSQL == true && (l_Row.substr(0,2) == ">>" || l_Row.substr(0,5) == "Time:"))
-				{	
-					l_LineParams.SqlTime = GetSqlTime(l_Row); 
-						
-					CreateTraceItem(l_LineParams, l_ResultArr, this.HasTimestamps);	
+				{											
+					CreateTraceItem(l_LineParams, l_ResultArr, this.HasTimestamps, GetSqlTime(l_Row));	
 					l_ReadSQL = false;	
 				}
 				
@@ -222,13 +308,13 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics)
 					l_Row.substr(0,5) != "Time:" && // keine Zeitinformationen 
 					l_Row.substr(0,2) != ">>") // keine Steuerzeilen
 				{
-					l_LineParams.SQLText = l_LineParams.SQLText.concat(" ".concat(l_Row)); 
+					l_LineParams.SQLText =  l_LineParams.SQLText === "" ? l_LineParams.SQLText.concat(l_Row) : l_LineParams.SQLText.concat("\n".concat(l_Row)); 
 				}									
 			}
 				 
 			// Sofern noch ein Lesevorgang nicht zuende geschrieben wurde diesen nun beenden
 			if (l_ReadSQL == true)
-				CreateTraceItem(l_LineParams, l_ResultArr, this.HasTimestamps);		
+				CreateTraceItem(l_LineParams, l_ResultArr, this.HasTimestamps, 0);		
 			
 			this.TraceRows = FilterResult(l_ResultArr);
 			

@@ -1,17 +1,16 @@
 l_App = angular.module('TrApp');
 
-l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrVisibility, TrAnalyze, TrOptions) 
+l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrAnalyze, TrOptions, TrVisibleType, TrFilterType) 
 {      	
 	// Variables
-	$scope.TrVisibility = TrVisibility;		
 	$scope.TrOptions = TrOptions;
-	$scope.Standort = {isp : "", city : "", country : "", query : ""};		
+	$scope.TrVisibleType = TrVisibleType;		
+	$scope.TrFilterType = TrFilterType;	
+	$scope.Standort = {isp : "", city : "", country : "", query : ""};	
 
 	// Events
 	$scope.OnClickAnalzyeTrace = DoClickAnalyzeTrace;
 	$scope.OnFileNameChanged = DoFileNameChanged;
-	$scope.OnClickAnalyzeWaitingTime = DoClickAnalyzeWaitingTime;
-	$scope.OnClickAnalyzeSQlTime = DoClickAnalyzeSQlTime;
 	$scope.TraceLoading = true;
 	
 //	InitLocation();
@@ -32,17 +31,6 @@ l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrVisibilit
 		);
 	}
 	
-	function DoClickAnalyzeWaitingTime() 
-	{
-		$scope.TrOptions.WaitingTime.On = $scope.TrOptions.WaitingTime.On != true;
-	}
-	
-		   
-	function DoClickAnalyzeSQlTime() 
-	{
-		$scope.TrOptions.SQlTime.On = $scope.TrOptions.SQlTime.On != true;
-	}	
-	
 	function DoClickAnalyzeTrace()
 	{
 		if (TrAnalyze.TraceFile == "")
@@ -50,7 +38,7 @@ l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrVisibilit
 			
 		else
 		{								
-			$scope.TrOptions.VisibleController = TrVisibility.VisibleController.Status;
+			$scope.TrOptions.VisibleController = TrVisibleType.Status;
 		}
 	}; 	
 	
@@ -62,7 +50,9 @@ l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrVisibilit
 		var l_Reader = new FileReader();
 
 		l_Reader.onload = DoOnLoad;		
-		l_Reader.readAsText(element.files[0]);
+
+		if (element.files.length > 0)
+			l_Reader.readAsText(element.files[0]);
 		
 		function DoOnLoad() 
 		{
@@ -74,10 +64,10 @@ l_App.controller('CtrTrInput', function($scope, $timeout, $q, $http, TrVisibilit
 	}	
 });
 
-l_App.controller('CtrTrStatus', function($scope, $sce, $q, $timeout, TrOptions, TrVisibility, TrAnalyze, TrStatistics, TrGridOptions) 
+l_App.controller('CtrTrStatus', function($scope, $sce, $q, $timeout, TrOptions, TrVisibleType, TrAnalyze, TrStatistics, TrGridOptions) 
 {
 	// Variables
-	$scope.TrVisibility = TrVisibility;
+	$scope.TrVisibleType = TrVisibleType;
 	$scope.TrOptions = TrOptions;
 	
 	// Events
@@ -92,7 +82,7 @@ l_App.controller('CtrTrStatus', function($scope, $sce, $q, $timeout, TrOptions, 
 	
 	function DoShowStatus()
 	{
-		if (TrOptions.VisibleController != TrVisibility.VisibleController.Status)
+		if (TrOptions.VisibleController != TrVisibleType.Status)
 		 return;
 
 		$scope.StatusText = $sce.trustAsHtml('Trace wird analysiert. Bitte warten...');
@@ -123,21 +113,22 @@ l_App.controller('CtrTrStatus', function($scope, $sce, $q, $timeout, TrOptions, 
 	
 	function HideStatusCtr()
 	{
-		$scope.TrOptions.VisibleController = TrVisibility.VisibleController.Chart;
+		$scope.TrOptions.VisibleController = TrVisibleType.Chart;
 	}
 });
 
-l_App.controller('CtrTrChart', function($scope, $sce, TrOptions, TrVisibility, TrAnalyze, TrStatistics) 
+l_App.controller('CtrTrChart', function($scope, $sce, TrOptions, TrVisibleType, TrFilterType, TrAnalyze, TrStatistics) 
 {
 	// Variables
-	$scope.TrVisibility = TrVisibility;
+	$scope.TrVisibleType = TrVisibleType;
 	$scope.TrOptions = TrOptions;
 	$scope.TrAnalyze = TrAnalyze;	
+	$scope.TrFilterType = TrFilterType;		
 	$scope.ChartType = 'SqlTime';	
 	$scope.ChartOptions = {legend: {display: true},
 						   tooltips: {enabled: true, 
 				                      callbacks: {label: function(tooltipItem, data) {
-												  	var label = data.labels[tooltipItem.index];
+													var label = data.labels[tooltipItem.index];													
 												  	var datasetLabel = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
 													return 'Nummer: ' + TrAnalyze.TraceRows[tooltipItem.index].Id + ' Zeit: ' + datasetLabel +  ' ' +  TrAnalyze.TraceRows[tooltipItem.index].Sql.substring(0, 110);
 													}
@@ -173,28 +164,28 @@ l_App.controller('CtrTrChart', function($scope, $sce, TrOptions, TrVisibility, T
 
     function DoShowInput() 
 	{
-		$scope.TrOptions.VisibleController = TrVisibility.VisibleController.Input;			
+		$scope.TrOptions.VisibleController = TrVisibleType.Input;			
 	};
 
     function DoShowResult() 
 	{
-		$scope.TrOptions.VisibleController = TrVisibility.VisibleController.Result;			
+		$scope.TrOptions.VisibleController = TrVisibleType.Result;			
 	};
 	
 	function DoShowChart()
 	{	
-		if (TrOptions.VisibleController != TrVisibility.VisibleController.Chart)
+		if (TrOptions.VisibleController != TrVisibleType.Chart)
 			return;
 		
-		$scope.labels = _.map(TrAnalyze.TraceRows, 'TimeStampStr');
+		$scope.labels = _.map(TrAnalyze.TraceRows, 'TimeStampStrShort');
 
-		if ($scope.ChartType == 'SqlTime')
+		if (($scope.ChartType == 'SqlTime' && TrOptions.SelectedFilter == TrFilterType.All) || TrOptions.SelectedFilter == TrFilterType.SqlTime)
 		{
 			$scope.series = ['Laufzeit'];
 			$scope.data = [_.map(TrAnalyze.TraceRows, 'SqlTime')];
 		}
 		
-		else if  ($scope.ChartType == 'WaitingTime')
+		else if  (($scope.ChartType == 'WaitingTime' && TrOptions.SelectedFilter == TrFilterType.All) || TrOptions.SelectedFilter == TrFilterType.WaitingTime)
 		{
 			$scope.series = ['Wartezeit'];
 			$scope.data = [_.map(TrAnalyze.TraceRows, 'WaitingTime')];
@@ -209,30 +200,61 @@ l_App.controller('CtrTrChart', function($scope, $sce, TrOptions, TrVisibility, T
 	}	
 });
 
-l_App.controller('CtrTrResult', function($scope, $sce, uiGridConstants, TrOptions, TrVisibility, TrAnalyze, TrStatistics, TrGridOptions ) 
+l_App.controller('CtrTrResult', function($scope, $sce, uiGridConstants, TrOptions, TrVisibleType, TrAnalyze, TrStatistics, TrGridOptions, TrFilterType) 
 {
 	// Variables
 	$scope.TrStatistics = TrStatistics;
-	$scope.TrVisibility = TrVisibility;
+	$scope.TrVisibleType = TrVisibleType;
+	$scope.TrFilterType = TrFilterType;	
 	$scope.TrOptions = TrOptions;	
 	$scope.TrAnalyze = TrAnalyze;
 	
 	$scope.TraceRows = [];
-	$scope.GridOptions = TrGridOptions;
-	$scope.GridOptions.onRegisterApi = DoRegisterGridApi;
+
+	InitGrid();
 
 	// Events
 	$scope.OnClickShowInput = DoShowInput;
 	$scope.OnClickShowChart = DoClickShowChart;	
-	
+	$scope.OnGetTableStyle = DoGetTableStyle; 
+
 	$scope.$watch('TrAnalyze.TraceRows', DoTraceResultChanged);
 	$scope.$watch('TrOptions.SelectedIndex', DoSelectedIndexChanged);
 	
 	// Methods	
+	function InitGrid()
+	{
+		$scope.GridOptions = TrGridOptions;
+		$scope.GridOptions.onRegisterApi = DoRegisterGridApi;	
+		$scope.GridOptions.columnDefs[2].cellTooltip = DoGetCellTooltipSqlTime;
+		$scope.GridOptions.columnDefs[3].cellTooltip = DoGetCellTooltipWaitingTime;	
+	}
+	
+	function DoGetCellTooltipSqlTime(p_Row, p_Col ) 
+	{
+		return p_Row.entity.SqlTimeStr;
+	}
+
+	function DoGetCellTooltipWaitingTime(p_Row, p_Col ) 
+	{
+		return p_Row.entity.WaitingTimeStr;	
+	}
+
+	function DoGetTableStyle() 
+	{
+		var l_RowHeight = 30; // your row height
+		var l_HeaderHeight = 60; // your header height
+		
+		var l_DisplayRows = Math.min(22, $scope.gridApi.core.getVisibleRows($scope.gridApi.grid).length);
+				
+		return {	
+		   height: ((l_DisplayRows * l_RowHeight) + l_HeaderHeight) + "px"
+		};
+	 };	
 
 	function DoRegisterGridApi(gridApi)
 	{
-		$scope.gridApi = gridApi;
+		$scope.gridApi = gridApi;			
 	};
 		
 	function DoSelectedIndexChanged()
@@ -259,17 +281,18 @@ l_App.controller('CtrTrResult', function($scope, $sce, uiGridConstants, TrOption
 
 	function DoTraceResultChanged()
 	{
+		$scope.gridApi.grid.columns[1].filters[0] = {};	
 		$scope.TraceRows = TrAnalyze.TraceRows;
 	}	
 
 	function DoShowInput() 
 	{
-		$scope.TrOptions.VisibleController = TrVisibility.VisibleController.Input;
+		$scope.TrOptions.VisibleController = TrVisibleType.Input;
 	};
 
 	function DoClickShowChart() 
 	{
-		$scope.TrOptions.VisibleController = TrVisibility.VisibleController.Chart;
+		$scope.TrOptions.VisibleController = TrVisibleType.Chart;
 	};	
 });
 

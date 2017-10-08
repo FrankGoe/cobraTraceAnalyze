@@ -4,7 +4,8 @@
 <head>	
     <meta charset="UTF-8"> 
     <meta name="author" content="Frank Gößwein">
-    <title>Cobra Trace Analyzer</title>	
+	<title>Cobra Trace Analyzer</title>	
+	<link rel="icon" href="icons/cobra.png" type="image/png">	
 
 	<link rel="stylesheet" href="styles/TrStyles.css">   			 
  	<link rel="stylesheet" href="styles/ui-grid.min.css"> 	
@@ -23,8 +24,8 @@
 
 <body ng-app="TrApp" >
   	
-    <div ng-controller="CtrTrInput" ng-show="TrOptions.VisibleController==TrVisibility.VisibleController.Input">      		
-		<h1>COBRA TRACE ANALYZER</h1>
+    <div ng-controller="CtrTrInput" ng-show="TrOptions.VisibleController==TrVisibleType.Input">      		
+		<div> <img id="cobraIcon" src="icons/cobra.png">  <h1>COBRA TRACE ANALYZER</h1> </div>
 		Tracedatei: <br>
 		<div class="TrPanel" style="width:400px">
 			<input type="file" onchange="angular.element(this).scope().OnFileNameChanged(this)">		
@@ -33,8 +34,9 @@
 		Filter: 
 		<br>		
 		<div class="TrPanel" style="width:800px">			
-			<input type="checkbox" ng-checked="TrOptions.SQlTime.On" ng-click="OnClickAnalyzeSQlTime()"/> Nur Statements anzeigen die länger als <input type="number" step=0.01 ng-model="TrOptions.SQlTime.Time"> Sekunden dauern. <br>
-			<input type="checkbox" ng-checked="TrOptions.WaitingTime.On" ng-click="OnClickAnalyzeWaitingTime()"/> Nur Statements anzeigen bei denen das Folgestatement länger als  <input type="number" step=0.01 ng-model="TrOptions.WaitingTime.Time"> Sekunden warten muss.
+			<input type="radio" ng-model="TrOptions.SelectedFilter" ng-value=0> Alle Statements anzeigen <br>			
+			<input type="radio" ng-model="TrOptions.SelectedFilter" ng-value=1> Nur Statements anzeigen die länger als <input type="number" step=0.01 ng-model="TrOptions.SqlTime"> Sekunden dauern. <br>
+			<input type="radio" ng-model="TrOptions.SelectedFilter" ng-value=2> Nur Statements anzeigen bei denen das Folgestatement länger als  <input type="number" step=0.01 ng-model="TrOptions.WaitingTime"> Sekunden warten muss.
 		</div>							
 		<br>
 		Hinweise:
@@ -51,36 +53,33 @@
 		</div>
 	</div>
     
-  	<div ng-controller="CtrTrStatus" ng-show="TrOptions.VisibleController==TrVisibility.VisibleController.Status"> 
+  	<div ng-controller="CtrTrStatus" ng-show="TrOptions.VisibleController==TrVisibleType.Status"> 
         <h2 ng-bind-html="StatusText"> </h2>        
 	</div>    
 
-	<div ng-controller="CtrTrChart" ng-show="TrOptions.VisibleController==TrVisibility.VisibleController.Chart">
+	<div ng-controller="CtrTrChart" ng-show="TrOptions.VisibleController==TrVisibleType.Chart">
 		<button ng-click="OnClickShowInput()">Zurück</button>
-		<button ng-click="OnClickResult()">Weiter</button><br>				
-		<h2>Übersicht</h2>  
-		<input type="radio" ng-model="ChartType" value="SqlTime" ng-change="OnShowChart()"> <label>Laufzeit</label> 
-		<input type="radio" ng-model="ChartType" value="WaitingTime" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> <label ng-show="TrAnalyze.HasTimestamps">Wartezeit</label> 
-		<input type="radio" ng-model="ChartType" value="Both" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> <label ng-show="TrAnalyze.HasTimestamps">Beide</label> 
-		<br/>
+		<button ng-click="OnClickResult()">Weiter</button><br><br>
+		<div ng-show="TrOptions.SelectedFilter==TrFilterType.All">
+			<input type="radio" ng-model="ChartType" value="SqlTime" ng-change="OnShowChart()"> <label>Laufzeit</label> 
+			<input type="radio" ng-model="ChartType" value="WaitingTime" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> <label ng-show="TrAnalyze.HasTimestamps">Wartezeit</label> 
+			<input type="radio" ng-model="ChartType" value="Both" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> <label ng-show="TrAnalyze.HasTimestamps">Beide</label> 
+		</div>
 		<div style="width:1200px">
-			<canvas id="line" class="chart chart-line" chart-data="data" chart-labels="labels" chart-series="series" chart-click="OnChartClick" chart-options="ChartOptions"></canvas>
+			<canvas id="chart" class="chart chart-line" chart-data="data" chart-labels="labels" chart-series="series" chart-click="OnChartClick" chart-options="ChartOptions"></canvas>
 		</div>
 	</div>
 
-	<div ng-controller="CtrTrResult" ng-show="TrOptions.VisibleController==TrVisibility.VisibleController.Result">
+	<div ng-controller="CtrTrResult" ng-show="TrOptions.VisibleController==TrVisibleType.Result">
 			<button ng-click="OnClickShowChart()">Zurück</button><br>		
 			<h2>Statements</h2>     
-			<div ui-grid="GridOptions" ui-grid-edit ui-grid-cellnav ui-grid-resize-columns ui-grid-grouping ui-grid-exporter class="TrGridResult">
-				<table class="TrGridResultFooter" ng-show="TrOptions.SQlTime.On || TrOptions.WaitingTime.On">
-						<tr><td>Count: {{TrStatistics.Filtered.Count}} </td><td ng-show="TrAnalyze.HasTimestamps"></td><td>Sum: {{TrStatistics.Filtered.SumTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps">SUM: {{TrStatistics.Filtered.SumWaitingTime.toFixed(3)}} </td></tr>
-						<tr><td></td><td ng-show="TrAnalyze.HasTimestamps"></td><td> Avg {{TrStatistics.Filtered.AvgTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>        		        		        	
-				</table>
-				<table class="TrGridResultFooter">
-						<tr><td>Count: {{TrStatistics.Total.Count}} </td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Total.SumTimestampTime.toFixed(3)}}</td><td> Sum: {{TrStatistics.Total.SumTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"> SUM {{TrStatistics.Total.SumWaitingTime.toFixed(3)}} </td></tr>
-						<tr><td> </td><td ng-show="TrAnalyze.HasTimestamps">  </td><td>Avg: {{TrStatistics.Total.AvgTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>
-				</table>        
-			</div>     
+			<div ui-grid="GridOptions" ui-grid-edit ui-grid-cellnav ui-grid-resize-columns ui-grid-grouping ui-grid-exporter ui-grid-auto-resize class="TrGridResult" ng-style="OnGetTableStyle()"></div>     
+			<table class="TrGridResultFooter">
+				<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td>Filtered: {{TrStatistics.Filtered.Count}} </td><td ng-show="TrAnalyze.HasTimestamps"></td><td>Sum: {{TrStatistics.Filtered.SumTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps">SUM: {{TrStatistics.Filtered.SumWaitingTime.toFixed(3)}} </td></tr>
+				<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td></td><td ng-show="TrAnalyze.HasTimestamps"></td><td> Avg {{TrStatistics.Filtered.AvgTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>        		        		        	
+				<tr><td>Total: {{TrStatistics.Total.Count}} </td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Total.SumTimestampTime.toFixed(3)}}</td><td> Sum: {{TrStatistics.Total.SumTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"> SUM {{TrStatistics.Total.SumWaitingTime.toFixed(3)}} </td></tr>
+				<tr><td> </td><td ng-show="TrAnalyze.HasTimestamps">  </td><td>Avg: {{TrStatistics.Total.AvgTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>			
+			</table>
 		</div>	
 </body>
 

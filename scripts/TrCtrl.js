@@ -243,7 +243,7 @@ l_App.controller('CtrTrResult', function($scope, $sce, uiGridConstants, TrOption
 	function DoGetTableStyle() 
 	{
 		var l_RowHeight = 30; // your row height
-		var l_HeaderHeight = 100; // your header height
+		var l_HeaderHeight = 60; // your header height
 		
 		var l_DisplayRows = Math.min(22, $scope.gridApi.core.getVisibleRows($scope.gridApi.grid).length);
 				

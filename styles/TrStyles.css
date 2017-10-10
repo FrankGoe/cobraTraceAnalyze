@@ -55,7 +55,7 @@ input[type="number"] {
 }
 
 .TrGridResult {
-		width: 100%; 
+		width: auto; 
 		height: auto;
 		margin-bottom: 2px;
 		margin-left: 10px;		

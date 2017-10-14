@@ -174,7 +174,7 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 						  TimeStampStrShort:l_TimeStampStr.substr(11,8),
 						  WaitingTime: 0, 
 						  WaitingTimeStr: "0",						  
-						  Typ: GetTraceType(p_LineParams),  
+						  Typ: p_LineParams.TraceType,  
 						  Sql: p_LineParams.SQLText};
 
 			p_ResultArr.push(l_Item);
@@ -198,26 +198,17 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 		p_LineParams.SQLTimestamp = new Date(0);
 	}	
 	
-	function GetTraceType(p_LineParams)
+	function IsSqlStatement(p_Row)
 	{
-		if (p_LineParams.TraceType.length != 0) 
-		{
-			return p_LineParams.TraceType
-		}
-		else
-		{
-			if (p_LineParams.SQLText.toUpperCase().search("SELECT")  > -1 || 
-				p_LineParams.SQLText.toUpperCase().search("UPDATE")  > -1 ||
-				p_LineParams.SQLText.toUpperCase().search("DELETE")  > -1 ||
-				p_LineParams.SQLText.toUpperCase().search("INSERT")  > -1  ||
-				p_LineParams.SQLText.toUpperCase().search("DROP")  > -1  ||				
-				p_LineParams.SQLText.toUpperCase().search("ALTER")  > -1  ||				
-				p_LineParams.SQLText.toUpperCase().search("CREATE")  > -1 )
-			 return "SQL"
-			else
-			 return "INFO";				
-		}		
-	}	
+		return 	(p_Row.toUpperCase().search("SELECT")  > -1 || 
+				p_Row.toUpperCase().search("UPDATE")  > -1 ||
+				p_Row.toUpperCase().search("DELETE")  > -1 ||
+				p_Row.toUpperCase().search("INSERT")  > -1  ||
+				p_Row.toUpperCase().search("DROP")  > -1  ||				
+				p_Row.toUpperCase().search("ALTER")  > -1  ||				
+				p_Row.toUpperCase().search("CREATE")  > -1 )
+
+	}
 	
 	return {
 		TraceFile: "",
@@ -274,20 +265,27 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 				if (l_Row.search("ANSI_NULLS") > -1 && l_Row.length > 0)
 					continue;
 				
+				// Lesevorgang beenden
+				if (l_ReadSQL == true && (l_Row.substr(0,2) == ">>" || 
+										  l_Row.substr(0,5) == "Time:" ||
+										   (IsSqlStatement(l_Row) && l_LineParams.TraceType == 'INFO')))
+				{											
+					CreateTraceItem(l_LineParams, l_ResultArr, this.HasTimestamps, GetSqlTime(l_Row));	
+					l_ReadSQL = false;
+				}
+
 				// Lesevorgang starten
 				if (l_SciParsing == false && l_ReadSQL == false && l_Row.substr(0,2) != ">>")	
 				{
-					l_ReadSQL = true;
+					if (IsSqlStatement(l_Row))
+					   l_LineParams.TraceType  = 'SQL'
+					else
+						l_LineParams.TraceType = 'INFO';
+
+					l_ReadSQL = true;			
 					l_LineParams.SQLTimestamp = l_CurrentTimestamp;
 				}
-
-				// Lesevorgang beenden
-				else if (l_ReadSQL == true && (l_Row.substr(0,2) == ">>" || l_Row.substr(0,5) == "Time:"))
-				{											
-					CreateTraceItem(l_LineParams, l_ResultArr, this.HasTimestamps, GetSqlTime(l_Row));	
-					l_ReadSQL = false;	
-				}
-				
+		
 				// Sci start parsing
 				if (l_Row.substr(0,6) == ">> SCI")
 				{
@@ -323,7 +321,7 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 			TrStatistics.Total.AvgTraceTime = TrStatistics.Total.SumTraceTime / TrStatistics.Total.Count;		
 
 			if (this.HasTimestamps)
-				TrStatistics.Total.SumTimestampTime = ((l_LastTimestamp - l_FirstTimestamp) / 1000); //.toFixed(3)		
+				TrStatistics.Total.SumTimestampTime = ((l_LastTimestamp - l_FirstTimestamp) / 1000);
 		},
 		
 		RowsAsTable: function() 

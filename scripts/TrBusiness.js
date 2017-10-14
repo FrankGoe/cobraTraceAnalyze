@@ -221,6 +221,7 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 	
 	return {
 		TraceFile: "",
+		FileName: "",
 		TraceRows: [], 
 		HasTimestamps : false,
 					

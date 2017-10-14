@@ -7,24 +7,34 @@
 	<title>Cobra Trace Analyzer</title>	
 	<link rel="icon" href="icons/cobra.png" type="image/png">	
 
-	<link rel="stylesheet" href="styles/TrStyles.css">   			 
- 	<link rel="stylesheet" href="styles/ui-grid.min.css"> 	
-	
+	<!--Angularjs 1.5-->
 	<script src="components/angular.min.js"></script>	
-	<script src="components/ui-grid.min.js"></script>
+	<!--lodash-->
+	<script src="components/lodash.min.js"></script>	
+	<!--chart and angular chart-->
 	<script src="components/Chart.min.js"></script>
 	<script src="components/angular-chart.min.js"></script>
-	<script src="components/lodash.min.js"></script>	
+	<!--ui-grid-->
+	<script src="components/ui-grid/ui-grid.min.js"></script>
+	<link rel="stylesheet" href="components/ui-grid/ui-grid.min.css"> 				
+
+	<!--highlight-->
+	<script type="text/javascript" src="components/highlight/highlight.pack.js"></script>
+	<link type="text/css" rel="stylesheet" href="components/highlight/default.css">
+	
+	<!--own styles-->
+	<link rel="stylesheet" href="styles/TrStyles.css">   			 	
 
 	<script src="scripts/TrApp.js"></script>	
 	<script src="scripts/TrBusiness.js"></script>	
-	<script src="scripts/TrCtrl.js"></script>	  	 		
+	<script src="scripts/TrCtrl.js"></script>	  
+	
 </head>
 
 
 <body ng-app="TrApp" >
   	
-    <div ng-controller="CtrTrInput" ng-show="TrOptions.VisibleController==TrVisibleType.Input">      		
+    <div ng-controller="CtrTrInput" ng-show="TrOptions.VisibleController==TrControllerType.Input">      		
 		<div> <img id="cobraIcon" src="icons/cobra.png">  <h1>COBRA TRACE ANALYZER</h1> </div>
 		Tracedatei: <br>
 		<div class="TrPanel" style="width:400px">
@@ -53,13 +63,12 @@
 		</div>
 	</div>
     
-  	<div ng-controller="CtrTrStatus" ng-show="TrOptions.VisibleController==TrVisibleType.Status"> 
+  	<div ng-controller="CtrTrStatus" ng-show="TrOptions.VisibleController==TrControllerType.Status"> 
         <h2 ng-bind-html="StatusText"> </h2>        
 	</div>    
 
-	<div ng-controller="CtrTrChart" ng-show="TrOptions.VisibleController==TrVisibleType.Chart">
-		<button ng-click="OnClickShowInput()">Zurück</button>
-		<button ng-click="OnClickResult()">Weiter</button><br><br>
+	<div ng-controller="CtrTrChart" ng-show="TrOptions.VisibleController==TrControllerType.Chart">
+		<button ng-click="OnClickShowInput()">Zurück</button><button ng-click="OnClickResult()">Weiter</button><label class="TrFileName">Datei: {{TrAnalyze.FileName}}</label><br><br>
 		<div ng-show="TrOptions.SelectedFilter==TrFilterType.All">
 			<input type="radio" ng-model="ChartType" value="SqlTime" ng-change="OnShowChart()"> <label>Laufzeit</label> 
 			<input type="radio" ng-model="ChartType" value="WaitingTime" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> <label ng-show="TrAnalyze.HasTimestamps">Wartezeit</label> 
@@ -70,17 +79,22 @@
 		</div>
 	</div>
 
-	<div ng-controller="CtrTrResult" ng-show="TrOptions.VisibleController==TrVisibleType.Result">
-			<button ng-click="OnClickShowChart()">Zurück</button><br>		
-			<h2>Statements</h2>     
-			<div ui-grid="GridOptions" ui-grid-edit ui-grid-cellnav ui-grid-resize-columns ui-grid-grouping ui-grid-exporter ui-grid-auto-resize class="TrGridResult" ng-style="OnGetTableStyle()"></div>     
-			<table class="TrGridResultFooter">
-				<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td>Filtered: {{TrStatistics.Filtered.Count}} </td><td ng-show="TrAnalyze.HasTimestamps"></td><td>Sum: {{TrStatistics.Filtered.SumTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Filtered.SumWaitingTime.toFixed(3)}} </td></tr>
-				<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td></td><td ng-show="TrAnalyze.HasTimestamps"></td><td> Avg {{TrStatistics.Filtered.AvgTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>        		        		        	
-				<tr><td>Total: {{TrStatistics.Total.Count}} </td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Total.SumTimestampTime.toFixed(3)}}</td><td> Sum: {{TrStatistics.Total.SumTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"> Sum: {{TrStatistics.Total.SumWaitingTime.toFixed(3)}} </td></tr>
-				<tr><td> </td><td ng-show="TrAnalyze.HasTimestamps">  </td><td>Avg: {{TrStatistics.Total.AvgTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>			
-			</table>
-		</div>	
+	<div ng-controller="CtrTrResult" ng-show="TrOptions.VisibleController==TrControllerType.Result">
+		<button ng-click="OnClickShowChart()">Zurück</button><label class="TrFileName">Datei: {{TrAnalyze.FileName}}</label><br>		
+		<h2>Statements</h2>     
+		<div ui-grid="GridOptions" ui-grid-edit ui-grid-cellnav ui-grid-resize-columns ui-grid-grouping ui-grid-exporter ui-grid-auto-resize class="TrGridResult" ng-style="OnGetTableStyle()"></div>     
+		<table class="TrGridResultFooter">
+			<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td>Filtered: {{TrStatistics.Filtered.Count}} </td><td ng-show="TrAnalyze.HasTimestamps"></td><td>Sum: {{TrStatistics.Filtered.SumTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Filtered.SumWaitingTime.toFixed(3)}} </td></tr>
+			<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td></td><td ng-show="TrAnalyze.HasTimestamps"></td><td> Avg {{TrStatistics.Filtered.AvgTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>        		        		        	
+			<tr><td>Total: {{TrStatistics.Total.Count}} </td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Total.SumTimestampTime.toFixed(3)}}</td><td> Sum: {{TrStatistics.Total.SumTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"> Sum: {{TrStatistics.Total.SumWaitingTime.toFixed(3)}} </td></tr>
+			<tr><td> </td><td ng-show="TrAnalyze.HasTimestamps">  </td><td>Avg: {{TrStatistics.Total.AvgTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>			
+		</table>
+	</div>	
+
+	<div ng-controller="CtrTrCellData" ng-show="TrOptions.VisibleController==TrControllerType.CellData">
+		<button ng-click="OnClickResult()">Zurück</button><label class="TrFileName">Datei: {{TrAnalyze.FileName}}</label><br><br><label>Feld: {{TrOptions.SelectedCell.Name}}</label>
+		<pre><code name="SelectedCellText" class="SQL"></code></pre>		
+	</div>	
 </body>
 
 </html>

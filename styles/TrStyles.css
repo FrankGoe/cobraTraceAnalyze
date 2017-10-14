@@ -64,9 +64,8 @@ input[type="number"]
 		border-radius: 5px;
 }
 
-.TrGridResult 
-{
-		width: 100%; 
+.TrGridResult {
+		width: auto; 
 		height: auto;
 		margin-bottom: 2px;
 		margin-left: 10px;		

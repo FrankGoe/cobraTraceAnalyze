@@ -2,46 +2,49 @@
 <html lang="en">
 
 <head>	
-    <meta charset="UTF-8"> 
+    <meta charset="ISO 8859-1"> 
     <meta name="author" content="Frank Gößwein">
 	<title>Cobra Trace Analyzer</title>	
 	<link rel="icon" href="icons/cobra.png" type="image/png">	
 
 	<!--Angularjs 1.5-->
-	<script src="components/angular.min.js"></script>	
-	<!--lodash-->
-	<script src="components/lodash.min.js"></script>	
+	<script src="components/angular/angular.min.js"></script>	
+
 	<!--chart and angular chart-->
-	<script src="components/Chart.min.js"></script>
-	<script src="components/angular-chart.min.js"></script>
+	<script src="components/chart/Chart.min.js"></script>
+	<script src="components/chart/angular-chart.min.js"></script>
+
 	<!--ui-grid-->
 	<script src="components/ui-grid/ui-grid.min.js"></script>
 	<link rel="stylesheet" href="components/ui-grid/ui-grid.min.css"> 				
 
+	<!--lodash-->
+	<script src="components/lodash/lodash.min.js"></script>	
+
 	<!--highlight-->
 	<script type="text/javascript" src="components/highlight/highlight.pack.js"></script>
-	<link type="text/css" rel="stylesheet" href="components/highlight/default.css">
-	
-	<!--own styles-->
-	<link rel="stylesheet" href="styles/TrStyles.css">   			 	
+	<link type="text/css" rel="stylesheet" href="components/highlight/default.css">	
 
+	<!-- clipboard-->
+	<script src="components/clipboard/clipboard.min.js"></script>	
+
+	<!--own scripts-->
 	<script src="scripts/TrApp.js"></script>	
 	<script src="scripts/TrBusiness.js"></script>	
 	<script src="scripts/TrCtrl.js"></script>	  
 	
+	<!--own styles-->
+	<link rel="stylesheet" href="styles/TrStyles.css">   			 	
 </head>
 
 
 <body ng-app="TrApp" >
   	
     <div ng-controller="CtrTrInput" ng-show="TrOptions.VisibleController==TrControllerType.Input">      		
-		<div> <img id="cobraIcon" src="icons/cobra.png">  <h1>COBRA TRACE ANALYZER</h1> </div>
-		Tracedatei: <br>
-		<div class="TrPanel" style="width:400px">
-			<input type="file" onchange="angular.element(this).scope().OnFileNameChanged(this)">		
+		<div> <img id="cobraIcon" src="icons/cobra.png">  <h1>COBRA TRACE ANALYZER</h1> </div> <br>
+		<div class="TrPanel" style="width:400px">		
+			<input name="file" type="file" class="inputfile" onchange="angular.element(this).scope().OnFileNameChanged(this)">					
 		</div> 
-		<br>		
-		Filter: 
 		<br>		
 		<div class="TrPanel" style="width:800px">			
 			<input type="radio" ng-model="TrOptions.SelectedFilter" ng-value=0> Alle Statements anzeigen <br>			
@@ -49,7 +52,6 @@
 			<input type="radio" ng-model="TrOptions.SelectedFilter" ng-value=2> Nur Statements anzeigen bei denen das Folgestatement länger als  <input type="number" step=0.01 ng-model="TrOptions.WaitingTime"> Sekunden warten muss.
 		</div>							
 		<br>
-		Hinweise:
 		<div class="TrPanel" style="width:1200px">
 			Die angezeigten Zeiten sind in Sekunden angegeben. <br>
 			Sofern der Trace Zeitstempel enthält werden diese angezeigt und die Wartezeit zwischen 2 Statements berechnet.<br>			
@@ -87,7 +89,7 @@
 			<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td>Filtered: {{TrStatistics.Filtered.Count}} </td><td ng-show="TrAnalyze.HasTimestamps"></td><td>Sum: {{TrStatistics.Filtered.SumTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Filtered.SumWaitingTime.toFixed(3)}} </td></tr>
 			<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td></td><td ng-show="TrAnalyze.HasTimestamps"></td><td> Avg {{TrStatistics.Filtered.AvgTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>        		        		        	
 			<tr><td>Total: {{TrStatistics.Total.Count}} </td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Total.SumTimestampTime.toFixed(3)}}</td><td> Sum: {{TrStatistics.Total.SumTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"> Sum: {{TrStatistics.Total.SumWaitingTime.toFixed(3)}} </td></tr>
-			<tr><td> </td><td ng-show="TrAnalyze.HasTimestamps">  </td><td>Avg: {{TrStatistics.Total.AvgTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>			
+			<tr><td> </td><td ng-show="TrAnalyze.HasTimestamps"> </td><td>Avg: {{TrStatistics.Total.AvgTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>			
 		</table>
 	</div>	
 
@@ -95,6 +97,7 @@
 		<button ng-click="OnClickResult()">Zurück</button><label class="TrFileName">Datei: {{TrAnalyze.FileName}}</label><br><br><label>Feld: {{TrOptions.SelectedCell.Name}}</label>
 		<pre><code name="SelectedCellText" class="SQL"></code></pre>		
 	</div>	
+	
 </body>
 
 </html>

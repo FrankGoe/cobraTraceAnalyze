@@ -127,7 +127,7 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 		l_Time = l_Time + parseInt(l_TimeStr.substr(l_Idx + 1, l_TimeStr.length)) * 3600 ; 
 		l_TimeStr = l_TimeStr.substr(0, l_Idx);			
 								
-		return l_Time;
+		return _.round(l_Time, 3);
 	}	
 	
 	function FilterResult(p_ResultArr)

@@ -357,7 +357,8 @@ l_App.controller('CtrTrCellData', function($scope, $sce, uiGridConstants, TrCont
 			l_Elem[0].innerHTML  = TrOptions.SelectedCell.Text; 
 			hljs.highlightBlock(l_Elem[0]);
 
-			copyText(l_Elem[0]);
+			clipboard.copy(TrOptions.SelectedCell.Text);
+			//copyText(l_Elem[0]);
 		}
 	}
 

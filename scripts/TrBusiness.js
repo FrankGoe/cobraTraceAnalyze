@@ -277,11 +277,14 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 				// Lesevorgang starten
 				if (l_SciParsing == false && l_ReadSQL == false && l_Row.substr(0,2) != ">>")	
 				{
-					if (IsSqlStatement(l_Row))
-					   l_LineParams.TraceType  = 'SQL'
-					else
-						l_LineParams.TraceType = 'INFO';
-
+					if (l_LineParams.TraceType == '')
+					{
+						if (IsSqlStatement(l_Row))
+						   l_LineParams.TraceType  = 'SQL'
+						else
+							l_LineParams.TraceType = 'INFO';
+					}
+					
 					l_ReadSQL = true;			
 					l_LineParams.SQLTimestamp = l_CurrentTimestamp;
 				}

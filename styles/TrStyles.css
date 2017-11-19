@@ -18,93 +18,94 @@ input[type="number"]
 	 padding-right: 20px;
 	 width: 42px;
 	 height: 42px;
+	 float: top;
 }
-
-#Standort 
+#chart
 {
-  position : absolute;
-  bottom : 0;
-  height : 40px;
-  margin-top : 40px;
-  vertical-align: bottom;
+	width: 1500px;
+	height: 800px;					
 }
-
-#chart 
+#grid
 {
-	margin-left: 20px;			
+	width: 1500px;
+	height: 800px;					
 }
-
-.TrButton 
+#form
 {
-	font-size:15px;		
-	display:inline-block;
-	cursor:pointer;
-	font-size:15px;
-	padding:7px 47px;
-	text-decoration:none;	
+	width: 1500px;
 }
 
-.TrButton:hover:enabled 
+.sql
 {
-	background-color:#e8f7f9;
-	color:black;	
+	width: 1500px;	
 }
-.TrButton:active:enabled 
+
+code
 {
-	position:relative;
-	top:1px;
+	width: 1500px;	
 }
-   
-.TrPanel 
-{ 
-		padding: 15px;
-		width: 400px;
-		background: #f5f5f5;
-		border: 1px solid #FFF;
-		border-radius: 5px;
+.header 
+{
+	float: top;
+	height: 6%
 }
 
-.TrGridResult {
-		width: auto; 
-		height: auto;
-		margin-bottom: 2px;
-		margin-left: 10px;		
-} 
+.controls
+{
+	float: left;
+}
 
-.TrGridResultFooter
-{ 
-	table-layout: fixed; 
-	font-size: large;
+
+.options {	
+	float: left;	
+	padding: 20px;
+	height: 60em;
+	background-color: rgba(191, 191, 191, 0.15);
+}
+
+.option {
+	margin-top: 10;
+	padding: 3px;
+}
+
+.caption {
+	font-size: 18px;
+	font-weight: 500;
+	margin-bottom: 10;	
+}
+
+.option > span {
+	margin-right: 10px;
+}
+
+.option > .dx-widget {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.tooltip-header {
+	margin-bottom: 5px;
+	font-size: 16px;
 	font-weight: bold;
-	border: 1px solid #f5f5f5f8;
-	margin-left: 10px;
+	padding-bottom: 5px;
+	border-bottom: 1px solid #c5c5c5;
 }
 
-.TrGridResultFooter td
-{
-  margin: 0;
-  padding: 0;
+.tooltip-body {
+	width: 170px;
 }
 
-.TrGridResultFooter td:nth-child(1),
-.TrGridResultFooter td:nth-child(3)
-{
-  width: 145px;
+.tooltip-body .series-name {
+	font-weight: normal;
+	opacity: 0.6;
+	display: inline-block;
+	line-height: 1.5;
+	padding-right: 10px;
+	width: 126px;
 }
 
-.TrGridResultFooter td:nth-child(2)
-{
-  width: 200px;
+.tooltip-body .value-text {
+	display: inline-block;
+	line-height: 1.5;
+	width: 30px;
 }
-
-.TrGridResultFooter td:nth-child(4)
-{
-  width: 149px;
-}
-
-.TrFileName
-{
-	position: absolute;
-	margin-top: 3px;	
-	margin-left: 20px;	
-} 

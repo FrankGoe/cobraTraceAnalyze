@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 
 <head>	
     <meta charset="ISO 8859-1"> 
@@ -7,97 +7,77 @@
 	<title>Cobra Trace Analyzer</title>	
 	<link rel="icon" href="icons/cobra.png" type="image/png">	
 
-	<!--Angularjs 1.5-->
-	<script src="components/angular/angular.min.js"></script>	
+	<!--angular-->
+	<script src="node_modules/angular/angular.min.js"></script>
 
-	<!--chart and angular chart-->
-	<script src="components/chart/Chart.min.js"></script>
-	<script src="components/chart/angular-chart.min.js"></script>
-
-	<!--ui-grid-->
-	<script src="components/ui-grid/ui-grid.min.js"></script>
-	<link rel="stylesheet" href="components/ui-grid/ui-grid.min.css"> 				
+	<!--jquery-->
+	<script src="node_modules/jquery/dist/jquery.min.js"></script>	
+	
+	<!--DevExpress-->
+	<script src="node_modules/jszip/dist/jszip.min.js"></script>		
+	<script src="node_modules/devextreme/dist/js/dx.all.js"></script>	
+	
+	<link type="text/css" rel="stylesheet" href="node_modules/devextreme/dist/css/dx.common.css">		
+	<link type="text/css" rel="stylesheet" href="node_modules/devextreme/dist/css/dx.spa.css">		
+	<link type="text/css" rel="stylesheet" href="node_modules/devextreme/dist/css/dx.light.css">				
 
 	<!--lodash-->
-	<script src="components/lodash/lodash.min.js"></script>	
-
+	<script src="node_modules//lodash/lodash.min.js"></script>	
+	
 	<!--highlight-->
-	<script type="text/javascript" src="components/highlight/highlight.pack.js"></script>
-	<link type="text/css" rel="stylesheet" href="components/highlight/default.css">	
+	<script type="text/javascript" src="node_modules/highlight/lib/vendor/highlight.js/highlight.pack.js"></script>
+	<link type="text/css" rel="stylesheet" href="node_modules/highlight/lib/vendor/highlight.js/styles/default.css">	
 
 	<!-- clipboard-->
-	<script src="components/clipboard/clipboard.min.js"></script>	
+	<script src="node_modules/clipboard-js/clipboard.min.js"></script>		
 
-	<!--own scripts-->
+	<!--app scripts-->
 	<script src="scripts/TrApp.js"></script>	
 	<script src="scripts/TrBusiness.js"></script>	
 	<script src="scripts/TrCtrl.js"></script>	  
 	
-	<!--own styles-->
+	<!--app styles-->
 	<link rel="stylesheet" href="styles/TrStyles.css">   			 	
 </head>
 
 
-<body ng-app="TrApp" >
-  	
-    <div ng-controller="CtrTrInput" ng-show="TrOptions.VisibleController==TrControllerType.Input">      		
-		<div> <img id="cobraIcon" src="icons/cobra.png">  <h1>COBRA TRACE ANALYZER</h1> </div> <br>
-		<div class="TrPanel" style="width:400px">		
-			<input name="file" type="file" class="inputfile" onchange="angular.element(this).scope().OnFileNameChanged(this)">					
-		</div> 
-		<br>		
-		<div class="TrPanel" style="width:800px">			
-			<input type="radio" ng-model="TrOptions.SelectedFilter" ng-value=0> Alle Statements anzeigen <br>			
-			<input type="radio" ng-model="TrOptions.SelectedFilter" ng-value=1> Nur Statements anzeigen die länger als <input type="number" step=0.01 ng-model="TrOptions.SqlTime"> Sekunden dauern. <br>
-			<input type="radio" ng-model="TrOptions.SelectedFilter" ng-value=2> Nur Statements anzeigen bei denen das Folgestatement länger als  <input type="number" step=0.01 ng-model="TrOptions.WaitingTime"> Sekunden warten muss.
-		</div>							
-		<br>
-		<div class="TrPanel" style="width:1200px">
-			Die angezeigten Zeiten sind in Sekunden angegeben. <br>
-			Sofern der Trace Zeitstempel enthält werden diese angezeigt und die Wartezeit zwischen 2 Statements berechnet.<br>			
-			Das Tool wurde mit Chrome und Firefox und Tracedateien bis zu 100MB getestet und hat damit keine Probleme. IE ist deutlich langsamer. <br>	 	
-			Ich habe versucht Zeilen die kein SQL enthalten mit Typ "Info" zu kennzeichnen. Die Unterscheidung ist aber nicht zu 100% möglich. Das liegt am Aufbau der Tracedatei.			
-		</div>
-		<br> 		
-        <button class="TrButton" ng-disabled="TraceLoading==true" ng-click="OnClickAnalzyeTrace()">Ergebnis ermitteln</button>	
-		<div id="Standort" ng-show="Standort.city!=''">
-			Standort: "{{Standort.city}} {{Standort.country}}"   IP: "{{Standort.query}}"   Isp: "{{Standort.isp}}"   
-		</div>
+<body class="dx-viewport" ng-app="TrApp"> 
+	<div class="header"> <img id="cobraIcon" src="icons/cobra.png">  <h1>COBRA TRACE ANALYZER</h1> </div>	
+    <div ng-controller="CtrTrace">      		
+		<div dx-load-panel="loadPanelSettings"></div>
+		<div class="options">		
+			<div class="caption">Trace auswählen</div>
+			<div class="option">     
+				<input name="file" type="file" class="inputfile" onchange="angular.element(this).scope().OnFileNameChanged(this)">		
+			</div>
+			<br>
+			<div class="caption">Filter</div>
+			<div class="option">     
+				<div dx-select-box="filterOptions"></div> 
+			</div>		
+			<div class="option" ng-show="currentFilter.Id!=TrFilterType[0].Id"> länger als <input type="number" step=0.01 ng-model="TrOptions.FilterTime"> Sekunden </div>			
+			<br>				
+			<div class="caption" ng-show="TrOptions.VisibleController==TrControllerType.Chart">Chart</div>				
+			<div class="option" ng-show="TrOptions.VisibleController==TrControllerType.Chart">              
+					<span>Linientyp</span>
+					<div dx-select-box="lineTypeOptions"></div>
+				</div>
+			<div class="option" ng-show="TrOptions.VisibleController==TrControllerType.Chart">              
+					<span>Kennzahl</span>
+					<div dx-select-box="seriesTypeOptions"></div>
+			</div>								
+		</div>		
+		
+		<div class="controls">			
+			<div ng-show="TrOptions.VisibleController!=TrControllerType.Empty" class="option" dx-tabs="tabSettings"></div>				
+			<div ng-show="TrOptions.VisibleController==TrControllerType.Chart" id="chart" dx-chart="chartSettings"></div>					
+			<div ng-show="TrOptions.VisibleController==TrControllerType.Result" id="grid" dx-data-grid="gridSettings"></div>					
+			<div ng-show="TrOptions.VisibleController==TrControllerType.CellData">
+				<div dx-form="formSettings" id="form"></div><br>				
+				<pre><code name="SqlText" class="sql"></code></pre>								
+			</div>					
+		</div>		
 	</div>
-    
-  	<div ng-controller="CtrTrStatus" ng-show="TrOptions.VisibleController==TrControllerType.Status"> 
-        <h2 ng-bind-html="StatusText"> </h2>        
-	</div>    
-
-	<div ng-controller="CtrTrChart" ng-show="TrOptions.VisibleController==TrControllerType.Chart">
-		<button ng-click="OnClickShowInput()">Zurück</button><button ng-click="OnClickResult()">Weiter</button><label class="TrFileName">Datei: {{TrAnalyze.FileName}}</label><br><br>
-		<div ng-show="TrOptions.SelectedFilter==TrFilterType.All">
-			<input type="radio" ng-model="ChartType" value="SqlTime" ng-change="OnShowChart()"> <label>Laufzeit</label> 
-			<input type="radio" ng-model="ChartType" value="WaitingTime" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> <label ng-show="TrAnalyze.HasTimestamps">Wartezeit</label> 
-			<input type="radio" ng-model="ChartType" value="Both" ng-change="OnShowChart()" ng-show="TrAnalyze.HasTimestamps"> <label ng-show="TrAnalyze.HasTimestamps">Beide</label> 
-		</div>
-		<div style="width:1400px">
-			<canvas id="chart" class="chart chart-line" chart-data="data" chart-labels="labels" chart-series="series" chart-click="OnChartClick" chart-options="ChartOptions"></canvas>
-		</div>
-	</div>
-
-	<div ng-controller="CtrTrResult" ng-show="TrOptions.VisibleController==TrControllerType.Result">
-		<button ng-click="OnClickShowChart()">Zurück</button><label class="TrFileName">Datei: {{TrAnalyze.FileName}}</label><br>		
-		<h2>Statements</h2>     
-		<div ui-grid="GridOptions" ui-grid-edit ui-grid-cellnav ui-grid-resize-columns ui-grid-grouping ui-grid-exporter ui-grid-auto-resize class="TrGridResult" ng-style="OnGetTableStyle()"></div>     
-		<table class="TrGridResultFooter">
-			<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td>Filtered: {{TrStatistics.Filtered.Count}} </td><td ng-show="TrAnalyze.HasTimestamps"></td><td>Sum: {{TrStatistics.Filtered.SumTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Filtered.SumWaitingTime.toFixed(3)}} </td></tr>
-			<tr ng-show="TrOptions.SelectedFilter!=TrFilterType.All"><td></td><td ng-show="TrAnalyze.HasTimestamps"></td><td> Avg {{TrStatistics.Filtered.AvgTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>        		        		        	
-			<tr><td>Total: {{TrStatistics.Total.Count}} </td><td ng-show="TrAnalyze.HasTimestamps">Sum: {{TrStatistics.Total.SumTimestampTime.toFixed(3)}}</td><td> Sum: {{TrStatistics.Total.SumTraceTime.toFixed(3)}} </td><td ng-show="TrAnalyze.HasTimestamps"> Sum: {{TrStatistics.Total.SumWaitingTime.toFixed(3)}} </td></tr>
-			<tr><td> </td><td ng-show="TrAnalyze.HasTimestamps"> </td><td>Avg: {{TrStatistics.Total.AvgTraceTime.toFixed(3)}}</td><td ng-show="TrAnalyze.HasTimestamps"></td> </tr>			
-		</table>
-	</div>	
-
-	<div ng-controller="CtrTrCellData" ng-show="TrOptions.VisibleController==TrControllerType.CellData">
-		<button ng-click="OnClickResult()">Zurück</button><label class="TrFileName">Datei: {{TrAnalyze.FileName}}</label><br><br><label>Feld: {{TrOptions.SelectedCell.Name}}</label>
-		<pre><code name="SelectedCellText" class="SQL"></code></pre>		
-	</div>	
-	
 </body>
 
 </html>

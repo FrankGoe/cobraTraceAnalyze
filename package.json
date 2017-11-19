@@ -1,0 +1,31 @@
+{
+  "name": "cobratraceanalyze",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FrankGoe/cobraTraceAnalyze.git"
+  },
+  "author": "Frank Gößwein",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FrankGoe/cobraTraceAnalyze/issues"
+  },
+  "homepage": "https://github.com/FrankGoe/cobraTraceAnalyze#readme",
+  "dependencies": {
+    "angular": "^1.6.6",
+    "clipboard-js": "^0.3.6",
+    "devextreme": "17.2.3",
+    "eslint": "^4.11.0",
+    "highlight": "^0.2.4",
+    "jquery": "3.2.1",
+    "lodash": "^4.17.4"
+  }
+}

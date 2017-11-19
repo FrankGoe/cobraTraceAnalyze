@@ -143,9 +143,9 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 			TrStatistics.Total.SumWaitingTime = TrStatistics.Total.SumWaitingTime + l_Item.WaitingTime;			
 			
 			if 	(
-					(TrOptions.SelectedFilter == TrFilterType.SqlTime && (l_Item.SqlTime > TrOptions.SqlTime)) || 
-					(TrOptions.SelectedFilter == TrFilterType.WaitingTime && (l_Item.WaitingTime > TrOptions.WaitingTime)) ||
-					(TrOptions.SelectedFilter == TrFilterType.All)
+					(TrOptions.currentFilter.Id == TrFilterType[1].Id && (l_Item.SqlTime > TrOptions.FilterTime)) || 
+					(TrOptions.currentFilter.Id == TrFilterType[2].Id && (l_Item.WaitingTime > TrOptions.FilterTime)) ||
+					(TrOptions.currentFilter.Id == TrFilterType[0].Id)
 				)		   
 			{				
 				TrStatistics.Filtered.Count++;
@@ -216,6 +216,20 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 		TraceRows: [], 
 		HasTimestamps : false,
 					
+		CreateEmptyItem: function()
+		{
+			return {Id: "", 
+				SqlTime: 0,
+				SqlTimeStr: "",
+				TimeStamp: 0,
+				TimeStampStr: "",
+				TimeStampStrShort: "",
+				WaitingTime: 0, 
+				WaitingTimeStr: "",						  
+				Typ: "",  
+				Sql: ""};
+		},
+	
 		AnalyzeTrace: function() {
 			var l_Rows = this.TraceFile.split("\n");
 			var l_ResultArr = [];		

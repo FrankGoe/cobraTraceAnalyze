@@ -22,32 +22,34 @@ input[type="number"]
 }
 #chart
 {
-	width: 1500px;
-	height: 800px;					
+	width: 1450px;
+	height: 700px;			
 }
 #grid
 {
-	width: 1500px;
-	height: 800px;					
-}
-#form
-{
-	width: 1500px;
+	width:1450px;
+	height: 800px;	
 }
 
 .sql
 {
-	width: 1500px;	
+	width: 1450px;
+    overflow-x: hidden;	
 }
 
-code
-{
-	width: 1500px;	
-}
 .header 
 {
 	float: top;
 	height: 6%
+}
+
+.client
+{	
+	width: 1800px; 
+	height: 900px;
+	border-color:  rgba(191, 191, 191, 0.15);
+	border-top-style: solid;
+	border-width: 2px;	
 }
 
 .controls
@@ -55,11 +57,11 @@ code
 	float: left;
 }
 
-
 .options {	
 	float: left;	
 	padding: 20px;
-	height: 60em;
+	height: 840px;
+	width: 250px;
 	background-color: rgba(191, 191, 191, 0.15);
 }
 

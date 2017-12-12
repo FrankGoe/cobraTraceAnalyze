@@ -40,10 +40,9 @@
 	<link rel="stylesheet" href="styles/TrStyles.css">   			 	
 </head>
 
-
 <body class="dx-viewport" ng-app="TrApp"> 
 	<div class="header"> <img id="cobraIcon" src="icons/cobra.png">  <h1>COBRA TRACE ANALYZER</h1> </div>	
-    <div ng-controller="CtrTrace">      		
+	<div class="client" ng-controller="CtrTrace">      		
 		<div dx-load-panel="loadPanelSettings"></div>
 		<div class="options">		
 			<div class="caption">Trace auswählen</div>
@@ -67,16 +66,15 @@
 					<div dx-select-box="seriesTypeOptions"></div>
 			</div>								
 		</div>		
-		
-		<div class="controls">			
-			<div ng-show="TrOptions.VisibleController!=TrControllerType.Empty" class="option" dx-tabs="tabSettings"></div>				
+		<div class="controls">	
+			<div ng-show="TrOptions.VisibleController!=TrControllerType.Empty" dx-tabs="tabSettings"></div>				
 			<div ng-show="TrOptions.VisibleController==TrControllerType.Chart" id="chart" dx-chart="chartSettings"></div>					
 			<div ng-show="TrOptions.VisibleController==TrControllerType.Result" id="grid" dx-data-grid="gridSettings"></div>					
 			<div ng-show="TrOptions.VisibleController==TrControllerType.CellData">
 				<div dx-form="formSettings" id="form"></div><br>				
 				<pre><code name="SqlText" class="sql"></code></pre>								
-			</div>					
-		</div>		
+			</div>				
+		</div>	
 	</div>
 </body>
 

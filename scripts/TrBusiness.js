@@ -138,6 +138,8 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 		{
 			var l_Item = p_ResultArr[i];	
 			
+			 l_Item.Id = l_FilteredResult.length + 1, 
+			
 			TrStatistics.Total.Count++;
 			TrStatistics.Total.SumTraceTime = TrStatistics.Total.SumTraceTime + l_Item.SqlTime;			
 			TrStatistics.Total.SumWaitingTime = TrStatistics.Total.SumWaitingTime + l_Item.WaitingTime;			
@@ -166,7 +168,8 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 		{					
 			var l_TimeStampStr = GetTimeStampAsString(p_LineParams.SQLTimestamp);
 
-			var l_Item = {Id: p_ResultArr.length + 1, 
+			var l_Item = {
+				 	  	  Id: p_ResultArr.length + 1, 
 						  SqlTime: p_SqlTime,
 						  SqlTimeStr: TimeToFormattedStr(p_SqlTime),
 						  TimeStamp: p_LineParams.SQLTimestamp,
@@ -175,7 +178,12 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 						  WaitingTime: 0, 
 						  WaitingTimeStr: "0",						  
 						  Typ: p_LineParams.TraceType,  
-						  Sql: p_LineParams.SQLText};
+						  Sql: p_LineParams.SQLText,
+						  ChartArgument: p_LineParams.SQLTimestamp
+						};
+
+			if (!p_HasTimestamps)						
+				l_Item.ChartArgument = p_LineParams.Id;
 
 			p_ResultArr.push(l_Item);
 			
@@ -218,16 +226,19 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 					
 		CreateEmptyItem: function()
 		{
-			return {Id: "", 
-				SqlTime: 0,
-				SqlTimeStr: "",
-				TimeStamp: 0,
-				TimeStampStr: "",
-				TimeStampStrShort: "",
-				WaitingTime: 0, 
-				WaitingTimeStr: "",						  
-				Typ: "",  
-				Sql: ""};
+			return {
+					Id: "", 
+					SqlTime: 0,
+					SqlTimeStr: "",
+					TimeStamp: 0,
+					TimeStampStr: "",
+					TimeStampStrShort: "",
+					WaitingTime: 0, 
+					WaitingTimeStr: "",						  
+					Typ: "",  
+					Sql: "",
+					ChartArgument: 0
+				  };
 		},
 	
 		AnalyzeTrace: function() {

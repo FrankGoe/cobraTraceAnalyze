@@ -202,20 +202,15 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 		if (p_Row == null)
 			return;
 
-		p_GridApi.beginUpdate();
-
 		p_GridApi.selectRows(p_Row);			
 
 		var l_PageSize = p_GridApi.pageSize();
 		var l_PageIndex = Math.floor(p_Row.Id / l_PageSize);
   
 		if (l_PageIndex !== p_GridApi.pageIndex()) 
-		{		  
 			p_GridApi.pageIndex(l_PageIndex);
-		}		
 
 		DoScrollToRow(p_GridApi, p_Row)		
-		p_GridApi.endUpdate();
 	}
 
 	function DoScrollToRow(p_GridApi, p_Row)

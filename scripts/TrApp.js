@@ -1,7 +1,7 @@
 l_App = angular.module('TrApp', ['dx']);
 
 l_App.constant('TrControllerType', {Chart: 0, Result: 1, CellData: 2, Empty: 3} );
-l_App.constant('TrFilterType', [{Id: "All", Desc: "Alle anzeigen"}, {Id: "SqlTime", Desc: "Laufzeit"}, {Id: "WaitingTime", Desc: "Wartezeit"}]);
+l_App.constant('TrFilterType', [{Id: "All", Desc: "Keine Einschränkung"}, {Id: "SqlTime", Desc: "Laufzeit"}, {Id: "WaitingTime", Desc: "Wartezeit"}]);
 l_App.constant('TrLineTypes', ["line", "spline", "stepline"]);
 l_App.constant('TrSeriesTypes', ["Laufzeit", "Wartezeit", "Beide"]);
 

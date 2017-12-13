@@ -61,7 +61,7 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 			return;
 	
 		// Vorherige Verzögere Ausführung abbrechen
-		if (typeof $scope.PrevDebounce !== "undefined")		
+		if ($scope.PrevDebounce !== undefined)		
 			$scope.PrevDebounce.cancel();
 
 		// Filter Changed verzögert ausführen
@@ -202,26 +202,20 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 		if (p_Row == null)
 			return;
 
-		p_GridApi.selectRows(p_Row);			
 
 		var l_PageSize = p_GridApi.pageSize();
 		var l_PageIndex = Math.floor(p_Row.Id / l_PageSize);
-  
+		var l_Mod = p_Row.Id % l_PageSize;
+
+		if (l_Mod == 0)
+			l_PageIndex = l_PageIndex -1
+
+		//var l_VisibleRowIndex = p_Row.Id - (l_PageIndex * l_PageSize);			
+					
+		p_GridApi.selectRows(p_Row);			  
+
 		if (l_PageIndex !== p_GridApi.pageIndex()) 
 			p_GridApi.pageIndex(l_PageIndex);
-
-		DoScrollToRow(p_GridApi, p_Row)		
-	}
-
-	function DoScrollToRow(p_GridApi, p_Row)
-	{
-		  var scrollable = p_GridApi.getScrollable();      
-		  var selectedRowElements = p_GridApi.getCellElement(p_Row.Id, 0);
-
-		  if (selectedRowElements == undefined)
-			  return;
-			  
-		  setTimeout(function(){scrollable.scrollToElement(selectedRowElements.parent()); }) 
 	}
 
 	function DoGridSelectionChanged(selectedItems)
@@ -282,6 +276,7 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 							  columnFixing: {enabled: true},
 							  columnAutoWidth: true,
 							  selection: {mode: "single"},
+							  paging: {pageSize: 16},
 							  columns: [{caption: "Nummer",
 										 dataField: "Id",
 										 dataType: "number",
@@ -416,7 +411,7 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 									label: {
 										format: "HH:mm:ss" //yyyy-MMdd HH:mm:ss
 									}
-								},
+								},								
 								useAggregation: false,
 								export: {enabled: true},	
 								tooltip: {enabled: true,
@@ -429,7 +424,7 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 								onInitialized: function (e) {
 											$scope.chartApi = e.component;    
 										},
-							onPointClick: DoChartClick
+								onPointClick: DoChartClick
 	   };	   
 	}
 });

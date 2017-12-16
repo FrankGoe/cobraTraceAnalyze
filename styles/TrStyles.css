@@ -22,19 +22,25 @@ input[type="number"]
 }
 #chart
 {
-	width: 1450px;
+	width: 1400px;
 	height: 700px;			
 }
 #grid
 {
-	width:1450px;
+	width:1400px;
 	height: 800px;	
+}
+
+.clear
+{
+	clear: both;	
 }
 
 .sql
 {
-	width: 1450px;
-    overflow-x: hidden;	
+	width: 1400px;
+	overflow-x: hidden;	
+	white-space: pre-wrap;
 }
 
 .header 
@@ -61,7 +67,7 @@ input[type="number"]
 	float: left;	
 	padding: 20px;
 	height: 840px;
-	width: 250px;
+	width: 320px;
 	background-color: rgba(191, 191, 191, 0.15);
 }
 
@@ -111,3 +117,19 @@ input[type="number"]
 	line-height: 1.5;
 	width: 30px;
 }
+.dx-dropdowneditor-overlay .dx-overlay-content {
+	min-width: 420px;
+  }
+
+div[dx-button]
+{
+	margin-top: 3px;
+}
+
+#btnConfirmOptions
+{
+	position: absolute;
+    bottom: 10%;
+	margin: 0px;
+}
+  

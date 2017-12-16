@@ -1,6 +1,6 @@
 l_App = angular.module('TrApp');
 
-l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnalyze, TrStatistics, TrOptions, TrControllerType, TrFilterType, TrLineTypes, TrSeriesTypes) 
+l_App.controller('CtrTrace', function($scope, $timeout, $q, $http, TrAnalyze, TrStatistics, TrOptions, TrControllerType, TrFilterType, TrLineTypes, TrSeriesTypes) 
 {      	
 	// Variables
 	$scope.TrOptions = TrOptions;
@@ -13,17 +13,17 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 	$scope.currentSeriesType = TrOptions.currentSeriesType;	
 	$scope.currentFilter = TrOptions.currentFilter;							
 
-	$scope.filterOptions = {dataSource: TrFilterType,  
+	$scope.cboFilterOptions = {dataSource: TrFilterType,  
 							valueExpr: 'Id',
 							displayExpr: 'Desc',
 							bindingOptions: { value: "currentFilter.Id"} 
 							};	
 
-	$scope.lineTypeOptions = {dataSource: TrLineTypes,  
+	$scope.cboLineTypeOptions = {dataSource: TrLineTypes,  
 								bindingOptions: { value: "currentLineType.Id"} 
 								};
 	  
-	$scope.seriesTypeOptions = {dataSource: TrSeriesTypes,  
+	$scope.cboSeriesTypeOptions = {dataSource: TrSeriesTypes,  
 								  bindingOptions: { value: "currentSeriesType.Id"} 
 								};							
 
@@ -32,7 +32,8 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 	$scope.loadPanelSettings = {closeOnOutsideClick: true,	width: 400, height: 200, bindingOptions: {visible: 'isLoadPanelVisible', message: 'loadingText'}};
 	$scope.isLoadPanelVisible = false; 
 	$scope.loadingText = "Bitte warten..."		
-	
+	TrOptions.VisibleController = TrControllerType.Empty;
+		
 	// Events
 
 	$scope.$watch('currentFilter.Id', ExecuteAnalyze); 
@@ -40,20 +41,15 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 	$scope.$watch('TrAnalyze.TraceRows', DoInitComponent);
 	$scope.$watch('TrOptions.SelectedRow', DoInitComponent);
 	$scope.$watch('TrOptions.VisibleController', DoInitComponent); 
-
 	$scope.$watch('TrOptions.FilterTime', DoFilterChanged); 			
-	 
-	// Events	
-	$scope.OnFileNameChanged = DoFileNameChanged;
+	$scope.onFileNameChanged = DoFileNameChanged;
 
+	InitTraceOptions();
 	InitTab();
 	InitChart();
 	InitGrid();	
 	InitForm();
-
-	TrOptions.VisibleController = TrControllerType.Empty;
 	
-
 	// Methods
 	function DoFilterChanged()
 	{	
@@ -100,7 +96,7 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 		$scope.traceLoading = false;
 	};	
 	
-	function DoFileNameChanged(element)
+	function DoFileNameChanged(p_Element)
 	{
 		$scope.traceLoading = true;
 		$scope.isLoadPanelVisible = true;
@@ -110,13 +106,13 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 
 		l_Reader.onload = DoOnLoad;		
 
-		if (element.files.length > 0)
+		if (p_Element.files.length > 0)
 		{
-			TrAnalyze.FileName = element.files[0].name;
+			TrAnalyze.FileName = p_Element.files[0].name;
 			$scope.loadingText ="Datei '" + TrAnalyze.FileName + "' wird geladen. Bitte warten...";
 			$scope.$apply();
 
-			$timeout(function() {l_Reader.readAsText(element.files[0]);}, 500)
+			$timeout(function() {l_Reader.readAsText(p_Element.files[0]);}, 500)
 			
 		}
 				
@@ -126,36 +122,6 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 			ExecuteAnalyze();
 		}		
 	}	
-
-	function OnShowTooltip(args)
-	{		
-		var l_TraceItem =  TrAnalyze.TraceRows[args.point.tag -1];
-		var l_SeriesValue = 0;
-		
-		if (args.seriesName === "Laufzeit")
-			l_SeriesValue = l_TraceItem.SqlTime
-		else
-			l_SeriesValue = l_TraceItem.WaitingTime;
-
-		return {
-				html: "<div> Nummer: " + l_TraceItem.Id + '  ' +  args.seriesName  + ":  " +l_SeriesValue + "<br>" +  l_TraceItem.Sql.substring(0,200) + "</div>"	
-		}
-	}
-
-	// Methods
-	function DoChartClick(info) 
-	{
-		if (info != undefined)
-		{
-			if (info.target.index <= TrAnalyze.TraceRows.length)
-			{
-				$scope.TrOptions.SelectedRow = TrAnalyze.TraceRows[info.target.index];	
-				info.target.hideTooltip();
-
-				$scope.TrOptions.VisibleController = TrControllerType.Result;				
-			}
-		}		
-	}
 
 	function DoInitComponent()
 	{	
@@ -195,74 +161,37 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 				}	
 			}
 		}
-	}		
 
-	function DoSelectGridRow(p_GridApi, p_Row)
-	{
-		if (p_Row == null)
-			return;
-
-
-		var l_PageSize = p_GridApi.pageSize();
-		var l_PageIndex = Math.floor(p_Row.Id / l_PageSize);
-		var l_Mod = p_Row.Id % l_PageSize;
-
-		if (l_Mod == 0)
-			l_PageIndex = l_PageIndex -1
-
-		//var l_VisibleRowIndex = p_Row.Id - (l_PageIndex * l_PageSize);			
-					
-		p_GridApi.selectRows(p_Row);			  
-
-		if (l_PageIndex !== p_GridApi.pageIndex()) 
-			p_GridApi.pageIndex(l_PageIndex);
-	}
-
-	function DoGridSelectionChanged(selectedItems)
-	{
-		$scope.TrOptions.SelectedRow = selectedItems.selectedRowsData[0];
-	}
-
-	function DoCellClicked(p_Cell)
-	{
-		var component = p_Cell.component;
-		
-		function initialClick() 
+		function DoSelectGridRow(p_GridApi, p_Row)
 		{
-			component.clickCount = 1;
-			component.clickKey = p_Cell.key;
-			component.clickDate = new Date();
-		}
+			// prüfen ob Selektion vorhanden ist
+			if (p_Row == null)
+				return;
 
-		function doubleClick() 
-		{
-			component.clickCount = 0;
-			component.clickKey = 0;
-			component.clickDate = null;
+			// prüfen ob zeile bereits selektiert wurde
+			var l_Rows = p_GridApi.getSelectedRowsData();
+			if (l_Rows.length > 0 && l_Rows[0] == p_Row) 
+				return;
 
-			$scope.TrOptions.VisibleController = TrControllerType.CellData;
-		}
+			// Sortierung entfernen sonst klappt das Seitenausrechnen in dieser form nicht
+			p_GridApi.clearSorting();				
 
-		if ((!component.clickCount) || (component.clickCount != 1) || (component.clickKey != p_Cell.key) ) 
-		{                
-			initialClick();
-		}
-		
-		else if (component.clickKey == p_Cell.key) 
-		{
-			if (((new Date()) - component.clickDate) <= 300)
-				doubleClick();                                
-			else
-				initialClick();                
+			var l_PageSize = p_GridApi.pageSize();
+			var l_PageIndex = Math.floor(p_Row.Id / l_PageSize);
+			var l_Mod = p_Row.Id % l_PageSize;
+	
+			if (l_Mod == 0)
+				l_PageIndex = l_PageIndex -1
+						
+			// Zeile selektieren
+			p_GridApi.selectRows(p_Row);			  
+	
+			// korrekte Seite auswählen
+			if (l_PageIndex !== p_GridApi.pageIndex()) 
+				p_GridApi.pageIndex(l_PageIndex);
 		}		
-	}
-
-	function clearSelection()
-	{
-		var l_Selection = window.getSelection();		
-		l_Selection.removeAllRanges();	
-	}
-		  
+	}		
+  
 	function InitGrid()
 	{	
 		$scope.gridData = [];
@@ -340,13 +269,53 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 									onCellClick: DoCellClicked,
 									onSelectionChanged: DoGridSelectionChanged
 								};
+
+		function DoGridSelectionChanged(selectedItems)
+		{
+			$scope.TrOptions.SelectedRow = selectedItems.selectedRowsData[0];
+		}
+	
+		function DoCellClicked(p_Cell)
+		{
+			var component = p_Cell.component;
+			
+			function initialClick() 
+			{
+				component.clickCount = 1;
+				component.clickKey = p_Cell.key;
+				component.clickDate = new Date();
+			}
+	
+			function doubleClick() 
+			{
+				component.clickCount = 0;
+				component.clickKey = 0;
+				component.clickDate = null;
+	
+				$scope.TrOptions.VisibleController = TrControllerType.CellData;
+			}
+	
+			if ((!component.clickCount) || (component.clickCount != 1) || (component.clickKey != p_Cell.key) ) 
+			{                
+				initialClick();
+			}
+			
+			else if (component.clickKey == p_Cell.key) 
+			{
+				if (((new Date()) - component.clickDate) <= 300)
+					doubleClick();                                
+				else
+					initialClick();                
+			}		
+		}
+															
 	}
 		
 	function InitForm()
 	{
 		$scope.formData = TrAnalyze.CreateEmptyItem();
 
-		$scope.formSettings =  {
+		$scope.frmTraceItem =  {
 					colCount: 1,					
 					bindingOptions: {
 						'formData': 'formData'                
@@ -384,16 +353,16 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 	function InitTab()
 	{
 		$scope.tabSettings = {items: [
-			{ text: "Chart"},
-			{ text: "Tabelle"},
-			{ text: "Datensatz"}
-			],
-			bindingOptions: {
-				selectedIndex: 'TrOptions.VisibleController'
-			},
-			width: 300,
-			height: 20,
-			selectedIndex: 0
+							{ text: "Chart"},
+							{ text: "Tabelle"},
+							{ text: "Datensatz"}
+							],
+							bindingOptions: {
+								selectedIndex: 'TrOptions.VisibleController'
+							},
+							width: 300,
+							height: 20,
+							selectedIndex: 0
 		};
 	};		
 	
@@ -426,7 +395,169 @@ l_App.controller('CtrTrace', function($scope, $sce, $timeout, $q, $http, TrAnaly
 										},
 								onPointClick: DoChartClick
 	   };	   
+
+	   function OnShowTooltip(args)
+	   {		
+		   var l_TraceItem =  TrAnalyze.TraceRows[args.point.tag -1];
+		   var l_SeriesValue = 0;
+		   
+		   if (args.seriesName === "Laufzeit")
+			   l_SeriesValue = l_TraceItem.SqlTime
+		   else
+			   l_SeriesValue = l_TraceItem.WaitingTime;
+   
+		   return {
+				   html: "<div> Nummer: " + l_TraceItem.Id + '  ' +  args.seriesName  + ":  " +l_SeriesValue + "<br>" +  l_TraceItem.Sql.substring(0,200) + "</div>"	
+		   }
+	   }
+   
+	   // Methods
+	   function DoChartClick(info) 
+	   {
+		   if (info != undefined)
+		   {
+			   if (info.target.index <= TrAnalyze.TraceRows.length)
+			   {
+				   $scope.TrOptions.SelectedRow = TrAnalyze.TraceRows[info.target.index];	
+				   info.target.hideTooltip();
+   
+				   $scope.TrOptions.VisibleController = TrControllerType.Result;				
+			   }
+		   }		
+	   }	   
 	}
+
+	function InitTraceOptions()
+	{
+		$scope.traceServiceActive = false;
+
+		$scope.cboTraceFilesOptions = {
+			bindingOptions: {dataSource: "traceFileItems"},
+			onValueChanged: DoSelectBoxChanged,
+			itemTemplate: function (p_TraceName) 
+			{
+				var l_TraceFile = _.filter($scope.traceFiles.items, { 'name': p_TraceName });
+				return "<div class='custom-item' title='" + p_TraceName + "'>" + p_TraceName + " | " + l_TraceFile[0].lastModified + " | " + l_TraceFile[0].totalSpaceMb + "</div>";
+			}								
+		};
+
+		$scope.btnTraceOptions = {text: String.fromCharCode(9881), 
+								onClick: doChangeTraceFolder};
+
+		$scope.popPathOptions = {title: 'Einstellungen', 
+								bindingOptions: {visible: 'folderPopupVisible'},
+								height: "250px",
+								width: "800px"
+								};
+
+		$scope.txtPathOptions = { bindingOptions: { value: "tracePath" },
+								width: "500px"
+								};
+
+		$scope.txtDaysDeleteOffsetOptions = { bindingOptions: { value: "daysDeleteOffset" },
+									width: "50px"};	
+				
+		$scope.btnConfirmOptions = {text: "Einstellungen übernehmen", 
+									onClick: doChangeTraceOptions};
+
+		$scope.chkDeleteFilesOptions = { bindingOptions: { value: "deleteTrace" },
+										width: "50px"
+										};
+
+		$scope.btnReloadFilesOptions = {text: String.fromCharCode(10226),
+									onClick: loadTraceFiles
+									};								  
+				
+		loadTraceFiles();
+
+		function loadTraceFiles()
+		{
+			$http.get("http://localhost:8080/traceFiles/").then(TraceFilesGetRequest, TraceFileGetRequestFailed);
+			
+			function TraceFilesGetRequest(p_Response)
+			{
+				$scope.traceServiceActive = true;		  
+				$scope.traceFiles = p_Response.data;	  
+				$scope.tracePath = p_Response.data.path;
+				$scope.daysDeleteOffset = 8;
+				$scope.deleteTrace = false;		  
+				$scope.folderPopupVisible = false;
+	
+				$scope.traceFileItems = _.map(p_Response.data.items, function (p_TraceFile) 				
+				{
+					return p_TraceFile.name;
+				});			
+			}
+
+			function TraceFileGetRequestFailed(p_Response)
+			{
+				$scope.traceServiceActive = false;
+				$scope.traceFiles  = undefined;
+				$scope.selectBoxOptions = undefined;	  
+			} 			
+		}
+
+		function doChangeTraceOptions()
+		{
+			$scope.folderPopupVisible = false;
+
+			if ($scope.tracePath != $scope.traceFiles.path)
+				changeTracePath();
+
+			if ($scope.deleteTrace)
+			{				
+				var l_Url = "http://localhost:8080/deleteTraceFiles/";      
+				$http.post(l_Url, $scope.daysDeleteOffset).then(pathChangedRequest);				
+			}
+
+			function changeTracePath()
+			{
+				//var l_Data = {newPath : $scope.tracePath};	
+				//$http.post(l_Url, JSON.stringify(l_Data)); //.then(UserResponse);      
+
+				var l_Url = "http://localhost:8080/newTracePath/";      
+				$http.post(l_Url, $scope.tracePath).then(pathChangedRequest);
+			}
+
+			function pathChangedRequest(p_Response)
+			{
+				$scope.traceFiles = p_Response.data;	  
+				$scope.tracePath = p_Response.data.path;
+	  
+				$scope.traceFileItems = _.map(p_Response.data.items, function (p_TraceFile) 
+				{
+				  return p_TraceFile.name;
+				});	  
+			}
+		}
+
+		function doChangeTraceFolder()
+		{
+			$scope.folderPopupVisible = true;
+		}
+
+		function DoSelectBoxChanged(p_Element)
+		{
+			$scope.traceLoading = true;
+			$scope.isLoadPanelVisible = true;
+		
+			$http.get("http://localhost:8080/traceFile/" + p_Element.value).then(TraceFileRequest, TraceFileRequestFailed);
+	
+			function TraceFileRequest(p_Response)
+			{
+				TrAnalyze.FileName = p_Element.value;
+				TrAnalyze.TraceFile = p_Response.data;
+				
+				ExecuteAnalyze();		
+			}
+	
+			function TraceFileRequestFailed(p_Response)
+			{
+				alert("URL nicht erreichtbar.  " + p_Response.config.url)
+			}		
+		}		
+	}
+	
 });
 
 

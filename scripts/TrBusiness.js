@@ -183,7 +183,7 @@ l_App.factory('TrAnalyze', function(TrOptions, TrStatistics, TrFilterType)
 						};
 
 			if (!p_HasTimestamps)						
-				l_Item.ChartArgument = p_LineParams.Id;
+				l_Item.ChartArgument = l_Item.Id;
 
 			p_ResultArr.push(l_Item);
 			

@@ -136,6 +136,16 @@ l_App.controller('CtrTrace', function($scope, $timeout, $q, $http, TrAnalyze, Tr
 				$scope.currentSeries = [{ valueField: 'SqlTime' , name: "Laufzeit"}, { valueField: 'WaitingTime', name: "Wartezeit" }];
 
 			$scope.chartData = TrAnalyze.TraceRows;	
+
+			if (!TrAnalyze.HasTimestamps)
+			{
+				var l_CharSettings = $scope.chartSettings;
+				$scope.chartSettings = undefined;
+				l_CharSettings.argumentAxis.label.format = undefined;
+
+				$scope.chartSettings = l_CharSettings;
+				$scope.chartApi.render({ force: true });
+			}
 		}
 						
 		if (TrOptions.VisibleController == TrControllerType.Result)
